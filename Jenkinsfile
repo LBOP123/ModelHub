@@ -22,18 +22,12 @@ pipeline {
 
         stage('部署') {
             steps {
-                sh """
-                    docker stop ${APP_NAME} || true
-                    docker rm ${APP_NAME} || true
+                sh '''
+                    docker stop modelhub || true
+                    docker rm modelhub || true
                     
-                    docker run -d \
-                        --name ${APP_NAME} \
-                        --restart always \
-                        -p 3000:3000 \
-                        --env-file .env \
-                        --network app-net \  
-                        ${APP_NAME}:latest
-                """
+                    docker run -d --name modelhub --restart always -p 3000:3000 --network app-net --env-file .env modelhub:latest
+                '''
             }
         }
     }
