@@ -6,14 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('拉取代码') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/LBOP123/ModelHub.git',
-                    credentialsId: 'github_token'
-            }
-        }
-
         stage('构建镜像') {
             steps {
                 sh "docker build -t ${APP_NAME}:latest ."
