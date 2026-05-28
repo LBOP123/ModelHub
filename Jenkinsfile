@@ -8,9 +8,9 @@ pipeline {
     stages {
         stage('拉取代码') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/你的用户名/ModelHub.git',
-                    credentialsId: 'github-credentials'
+                git branch: 'main',
+                    url: 'https://github.com/LBOP123/ModelHub.git',
+                    credentialsId: 'github_token'
             }
         }
 
