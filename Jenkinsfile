@@ -12,12 +12,13 @@ pipeline {
             }
         }
         
-        // 新增阶段：从 Jenkins 凭据中读取文本，并生成 .env 文件
         stage('准备环境变量') {
             steps {
-                withCredentials([string(credentialsId: 'env-content', variable: 'ENV_SECRET')]) {
-                    // 将机密文本的内容写入当前目录的 .env 文件
-                    sh 'echo "$ENV_SECRET" > .env'
+                // 注意：credentialsId 后面的值必须和你刚才上传机密文件时填的 ID 保持一致！
+                // 假设你填的 ID 是 'env-file-secret'
+                withCredentials([file(credentialsId: 'env-file-secret', variable: 'ENV_FILE')]) {
+                    // 把 Jenkins 临时生成的机密文件复制到当前目录下并命名为 .env
+                    sh 'cp $ENV_FILE .env'
                 }
             }
         }
@@ -28,7 +29,6 @@ pipeline {
                     docker stop ${APP_NAME} || true
                     docker rm ${APP_NAME} || true
                     
-                    # 此时当前目录下已经有了刚才生成的 .env 文件
                     docker run -d \
                         --name ${APP_NAME} \
                         --restart always \
@@ -47,8 +47,8 @@ pipeline {
         failure {
             echo '部署失败，请检查日志'
         }
-        // 建议加上清理，确保密码文件不在服务器的工作区残留
         always {
+            // 部署完成后，无论成功还是失败，都清理掉 .env 文件，防止密码泄露
             sh 'rm -f .env'
         }
     }
