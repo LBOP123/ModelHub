@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg);
+}
+.login-card {
+  width: 400px;
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 36px;
+  box-shadow: var(--shadow-md);
+  animation: fadeUp .4s ease-out;
+}
+.login-brand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.login-brand-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(79,110,247,.3);
+}
+.login-brand-icon svg { width: 22px; height: 22px; }
+.login-brand h1 { font-size: 19px; font-weight: 700; }
+.login-brand p { font-size: 13px; color: var(--text-tertiary); margin-top: 4px; }
+
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.tab-btn {
+  flex: 1;
+  height: 38px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.tab-btn.active { color: var(--blue); font-weight: 600; }
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+  background: var(--blue);
+  border-radius: 1px;
+}
+
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.form-group input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-white);
+  outline: none;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.form-group input::placeholder { color: var(--text-placeholder); }
+.form-group input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(79,110,247,.1);
+}
+
+.submit-btn {
+  width: 100%;
+  height: 42px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  margin-top: 4px;
+}
+.submit-btn:hover { background: var(--blue-hover); }
+.submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.error-msg {
+  font-size: 12px;
+  color: var(--red);
+  margin-top: 10px;
+  text-align: center;
+  min-height: 18px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.form-panel { display: none; }
+.form-panel.active { display: block; }
+
+.admin-hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin-top: 16px;
+}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-brand">
+    <div class="login-brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
+    </div>
+    <h1>欢迎使用 ModelHub</h1>
+    <p>AI 模型服务平台</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="login">登录</button>
+    <button class="tab-btn" data-tab="register">注册</button>
+  </div>
+
+  <div class="form-panel active" id="panelLogin">
+    <form id="loginForm">
+      <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" name="email" placeholder="请输入邮箱" required>
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" name="password" placeholder="请输入密码" required>
+      </div>
+      <button type="submit" class="submit-btn">登录</button>
+      <div class="error-msg" id="loginError"></div>
+    </form>
+
+    <div class="divider">管理员密钥登录</div>
+
+    <form id="adminForm">
+      <div class="form-group">
+        <label>管理员密钥</label>
+        <input type="password" name="adminKey" placeholder="输入管理员密钥" required>
+      </div>
+      <button type="submit" class="submit-btn" style="background:var(--orange)">管理员登录</button>
+      <div class="error-msg" id="adminError"></div>
+    </form>
+  </div>
+
+  <div class="form-panel" id="panelRegister">
+    <form id="registerForm">
+      <div class="form-group">
+        <label>用户名</label>
+        <input type="text" name="username" placeholder="请输入用户名" required minlength="2">
+      </div>
+      <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" name="email" placeholder="请输入邮箱" required>
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" name="password" placeholder="请输入密码（至少 6 位）" required minlength="6">
+      </div>
+      <button type="submit" class="submit-btn">注册</button>
+      <div class="error-msg" id="registerError"></div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+if (localStorage.getItem('modelhub_token')) {
+  const params = new URLSearchParams(location.search);
+  location.href = params.get('redirect') || '/';
+}
+
+const tabBtns = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.form-panel');
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).classList.add('active');
+  });
+});
+
+const initTab = new URLSearchParams(location.search).get('tab');
+if (initTab === 'register') {
+  tabBtns.forEach(b => b.classList.remove('active'));
+  panels.forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-tab="register"]').classList.add('active');
+  document.getElementById('panelRegister').classList.add('active');
+}
+
+// Login
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  const btn = e.target.querySelector('.submit-btn');
+  btn.disabled = true;
+  try {
+    const form = new FormData(e.target);
+    const res = await api.post('/auth/login', { email: form.get('email'), password: form.get('password') });
+    localStorage.setItem('modelhub_token', res.data.token);
+    const params = new URLSearchParams(location.search);
+    location.href = params.get('redirect') || '/';
+  } catch (err) {
+    errEl.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Register
+document.getElementById('registerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const errEl = document.getElementById('registerError');
+  errEl.textContent = '';
+  const btn = e.target.querySelector('.submit-btn');
+  btn.disabled = true;
+  try {
+    const form = new FormData(e.target);
+    const res = await api.post('/auth/register', { username: form.get('username'), email: form.get('email'), password: form.get('password') });
+    localStorage.setItem('modelhub_token', res.data.token);
+    const params = new URLSearchParams(location.search);
+    location.href = params.get('redirect') || '/';
+  } catch (err) {
+    errEl.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Admin key login
+document.getElementById('adminForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const errEl = document.getElementById('adminError');
+  errEl.textContent = '';
+  const btn = e.target.querySelector('.submit-btn');
+  btn.disabled = true;
+  try {
+    const form = new FormData(e.target);
+    const res = await api.post('/auth/admin-login', { key: form.get('adminKey') });
+    localStorage.setItem('modelhub_token', res.data.token);
+    const params = new URLSearchParams(location.search);
+    location.href = params.get('redirect') || '/';
+  } catch (err) {
+    errEl.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

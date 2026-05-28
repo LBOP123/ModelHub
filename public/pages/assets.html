@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资产 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 48px 80px;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+  animation: fadeUp .4s ease-out;
+}
+.page-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(79,110,247,.25);
+}
+.page-icon svg { width: 22px; height: 22px; color: #fff; }
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+.page-desc {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+/* Stats */
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  flex: 1;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  transition: var(--transition);
+}
+.stat-card:hover { border-color: var(--blue); box-shadow: var(--shadow); }
+.stat-num { font-size: 24px; font-weight: 800; color: var(--blue); }
+.stat-label { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+/* Filter */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.filter-tag {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-tag:hover { border-color: var(--blue); color: var(--blue); }
+.filter-tag.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* Record Grid */
+.record-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.record-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+  animation: fadeUp .4s ease-out both;
+}
+.record-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.record-thumb {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: var(--bg);
+  cursor: pointer;
+  display: block;
+}
+.record-thumb:hover { opacity: .9; }
+
+.record-body {
+  padding: 16px 18px;
+}
+.record-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.record-model {
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.record-model-icon {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+.record-model-icon.image { background: #3d9a3d; }
+.record-model-icon.video { background: #e89a3c; }
+.record-model-icon.audio { background: var(--purple); }
+.record-model-icon.text  { background: var(--blue); }
+
+.record-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.record-status.success { background: var(--green-light); color: var(--green); }
+.record-status.pending { background: var(--orange-light); color: var(--orange); }
+.record-status.failed  { background: var(--red-light); color: var(--red); }
+
+.record-prompt {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.record-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+.record-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 18px 16px;
+}
+.record-action-btn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  transition: var(--transition);
+  font-family: inherit;
+}
+.record-action-btn:hover { border-color: var(--blue); color: var(--blue); }
+.record-action-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+}
+.page-btn {
+  height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.page-btn:hover { border-color: var(--blue); color: var(--blue); }
+.page-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Empty */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  grid-column: 1 / -1;
+}
+.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .4; }
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.lightbox.show { display: flex; }
+.lightbox img { max-width: 90vw; max-height: 90vh; border-radius: var(--radius); }
+
+@media (max-width: 768px) {
+  .container { padding: 90px 20px 60px; }
+  .record-grid { grid-template-columns: 1fr; }
+  .stats-row { flex-wrap: wrap; }
+  .stat-card { min-width: calc(50% - 8px); }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    </div>
+    <div>
+      <h1 class="page-title">我的资产</h1>
+      <p class="page-desc">模型调用记录与生成结果</p>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="statTotal">-</div><div class="stat-label">全部记录</div></div>
+    <div class="stat-card"><div class="stat-num" id="statImage">-</div><div class="stat-label">图像</div></div>
+    <div class="stat-card"><div class="stat-num" id="statVideo">-</div><div class="stat-label">视频</div></div>
+    <div class="stat-card"><div class="stat-num" id="statAudio">-</div><div class="stat-label">音频</div></div>
+    <div class="stat-card"><div class="stat-num" id="statText">-</div><div class="stat-label">文本</div></div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <div class="filter-tag active" data-type="all">全部</div>
+    <div class="filter-tag" data-type="image">图像</div>
+    <div class="filter-tag" data-type="video">视频</div>
+    <div class="filter-tag" data-type="audio">音频</div>
+    <div class="filter-tag" data-type="text">文本</div>
+  </div>
+
+  <div class="record-grid" id="recordGrid"></div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
+  <img id="lightboxImg" src="">
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('assets');
+if (!checkAuth()) throw new Error('redirect');
+
+const isAdmin = getAuthState().isAdmin;
+if (isAdmin) {
+  document.querySelector('.page-title').textContent = '所有资产';
+  document.querySelector('.page-desc').textContent = '管理员模式 - 查看所有用户的模型调用记录';
+}
+
+let currentType = 'all';
+let currentPage = 1;
+const PAGE_SIZE = 12;
+
+async function loadStats() {
+  try {
+    const res = await api.get('/assets/stats');
+    const s = res.data;
+    document.getElementById('statTotal').textContent = s.total;
+    document.getElementById('statImage').textContent = s.image;
+    document.getElementById('statVideo').textContent = s.video;
+    document.getElementById('statAudio').textContent = s.audio;
+    document.getElementById('statText').textContent = s.text;
+  } catch {}
+}
+
+async function loadRecords() {
+  const grid = document.getElementById('recordGrid');
+
+  try {
+    const params = `?page=${currentPage}&limit=${PAGE_SIZE}` + (currentType !== 'all' ? `&type=${currentType}` : '');
+    const res = await api.get(`/assets${params}`);
+    const { list, total } = res.data;
+
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128196;</div><div>暂无调用记录</div></div>`;
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = list.map((r, i) => `
+      <div class="record-card" style="animation-delay:${i * .05}s">
+        ${r.response_url ? `<img class="record-thumb" src="${r.response_url}" onclick="showLightbox('${r.response_url}')" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <div class="record-body">
+          <div class="record-top">
+            <span class="record-model">
+              <span class="record-model-icon ${r.category}">${r.icon}</span>
+              ${r.model_name}
+            </span>
+            <span class="record-status ${r.status}">${r.status === 'success' ? '成功' : r.status === 'pending' ? '进行中' : '失败'}</span>
+          </div>
+          ${isAdmin && r.username ? `<div style="font-size:11px;color:var(--blue);margin-bottom:4px">用户: ${r.username}</div>` : ''}
+          ${r.task_id ? `<div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;font-family:monospace">任务ID: ${r.task_id}</div>` : ''}
+          <div class="record-prompt">${r.request_params?.prompt || JSON.stringify(r.request_params || {})}</div>
+          <div class="record-time">${formatTime(r.created_at)}</div>
+        </div>
+        <div class="record-actions">
+          ${r.response_url ? `<button class="record-action-btn" onclick="window.open('${r.response_url}','_blank')">查看</button>` : ''}
+          ${r.status === 'pending' && r.task_id ? `<button class="record-action-btn" onclick="resumeTask('${r.model_id}','${r.task_id}')">继续</button>` : ''}
+          <button class="record-action-btn danger" onclick="deleteRecord(${r.id})">删除</button>
+        </div>
+      </div>
+    `).join('');
+
+    renderPagination(total);
+
+  } catch (err) {
+    grid.innerHTML = `<div class="empty-state">加载失败: ${err.message}</div>`;
+  }
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / PAGE_SIZE);
+  if (pages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="goPage(${currentPage-1})">上一页</button>`;
+  for (let i = 1; i <= pages; i++) {
+    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" ${currentPage >= pages ? 'disabled' : ''} onclick="goPage(${currentPage+1})">下一页</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage = p;
+  loadRecords();
+}
+
+async function deleteRecord(id) {
+  if (!confirm('确定删除此记录？')) return;
+  try {
+    await api.delete(`/assets/${id}`);
+    showToast('已删除', 'success');
+    loadRecords();
+    loadStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function showLightbox(url) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightbox').classList.add('show');
+}
+
+// Filter
+document.getElementById('filterBar').addEventListener('click', e => {
+  const tag = e.target.closest('.filter-tag');
+  if (!tag) return;
+  document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+  tag.classList.add('active');
+  currentType = tag.dataset.type;
+  currentPage = 1;
+  loadRecords();
+});
+
+loadStats();
+loadRecords();
+
+function resumeTask(modelId, taskId) {
+  // Save to pending tasks so model page can resume polling
+  const key = localStorage.getItem('modelhub_api_key') || '';
+  if (!key) {
+    showToast('请先在首页保存 API 密钥', 'error');
+    return;
+  }
+  const tasks = JSON.parse(localStorage.getItem('modelhub_pending_tasks') || '{}');
+  tasks[taskId] = { key, record_id: null, model_id: modelId, time: Date.now() };
+  localStorage.setItem('modelhub_pending_tasks', JSON.stringify(tasks));
+  window.location.href = `/pages/model.html?id=${modelId}`;
+}
+</script>
+</body>
+</html>

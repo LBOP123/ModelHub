@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文档管理 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 84px 48px 80px;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  animation: fadeUp .4s ease-out;
+}
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: var(--transition);
+}
+.back-btn:hover { color: var(--blue); }
+.back-btn svg { width: 16px; height: 16px; }
+.page-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(156,39,176,.25);
+}
+.page-icon svg { width: 22px; height: 22px; color: #fff; }
+.page-title { font-size: 26px; font-weight: 800; margin-bottom: 2px; }
+.page-desc { font-size: 13px; color: var(--text-tertiary); }
+
+.btn-primary {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--blue);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-primary:hover { opacity: .85; }
+
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.doc-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  transition: var(--transition);
+  animation: fadeUp .4s ease-out both;
+}
+.doc-card:hover { border-color: var(--blue); box-shadow: var(--shadow); }
+.doc-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.doc-title { font-size: 16px; font-weight: 700; }
+.doc-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.method-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-family: monospace;
+}
+.method-badge.POST { background: var(--blue-light); color: var(--blue); }
+.method-badge.GET { background: var(--green-light); color: var(--green); }
+.method-badge.PUT { background: var(--orange-light); color: var(--orange); }
+.method-badge.DELETE { background: var(--red-light); color: var(--red); }
+.order-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-tertiary);
+}
+.doc-endpoint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: monospace;
+  margin-bottom: 10px;
+  word-break: break-all;
+}
+.doc-actions {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #f5f5f5;
+  padding-top: 12px;
+}
+.btn-ghost-sm {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-secondary);
+}
+.btn-ghost-sm:hover { border-color: var(--blue); color: var(--blue); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  padding: 32px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.15);
+  animation: fadeUp .3s ease-out;
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.form-group {
+  margin-bottom: 14px;
+}
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus { border-color: var(--blue); }
+.form-group textarea { min-height: 100px; resize: vertical; font-family: monospace; }
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.btn-cancel {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 76px 16px 60px; }
+  .page-title { font-size: 20px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .form-row { grid-template-columns: 1fr; }
+  .doc-card { padding: 14px 16px; }
+  .doc-card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .modal { padding: 20px; max-width: 95%; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+  <a href="/pages/admin-models.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+    返回模型管理
+  </a>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <div>
+        <h1 class="page-title" id="pageTitle">API 文档管理</h1>
+        <p class="page-desc" id="pageDesc">加载中...</p>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="openCreate()">新建文档段</button>
+  </div>
+
+  <div class="doc-list" id="docList"></div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" id="formModal">
+  <div class="modal">
+    <div class="modal-title" id="formTitle">新建文档段</div>
+    <input type="hidden" id="editId">
+    <div class="form-group" id="copyGroup">
+      <label>从已有文档引用</label>
+      <select id="copyFrom" onchange="copyFromDoc(this.value)">
+        <option value="">-- 选择一个已有文档段自动填充 --</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>标题 *</label>
+        <input type="text" id="fTitle" placeholder="如: 生成图像">
+      </div>
+      <div class="form-group">
+        <label>排序</label>
+        <input type="number" id="fOrder" value="0" min="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>端点 URL</label>
+        <input type="text" id="fEndpoint" placeholder="https://api.example.com/endpoint">
+      </div>
+      <div class="form-group">
+        <label>HTTP 方法</label>
+        <select id="fMethod">
+          <option value="POST">POST</option>
+          <option value="GET">GET</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>请求头 (JSON 数组)</label>
+      <textarea id="fHeaders" placeholder='[{"name":"Authorization","value":"接口密钥"}]'></textarea>
+    </div>
+    <div class="form-group">
+      <label>参数 (JSON 数组)</label>
+      <textarea id="fParams" placeholder='[{"name":"prompt","required":true,"type":"string","desc":"描述"}]'></textarea>
+    </div>
+    <div class="form-group">
+      <label>请求示例</label>
+      <textarea id="fReqExample" placeholder="请求示例代码"></textarea>
+    </div>
+    <div class="form-group">
+      <label>响应示例</label>
+      <textarea id="fResExample" placeholder="响应示例 JSON"></textarea>
+    </div>
+    <div class="form-group">
+      <label>备注 (HTML)</label>
+      <textarea id="fNotes" placeholder="额外说明，支持 HTML"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeForm()">取消</button>
+      <button class="btn-primary" onclick="saveDoc()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('admin');
+if (!checkAuth()) throw new Error('redirect');
+if (!getAuthState().isAdmin) { window.location.href = '/'; throw new Error('redirect'); }
+
+const modelId = new URLSearchParams(window.location.search).get('modelId');
+if (!modelId) { window.location.href = '/pages/admin-models.html'; throw new Error('no modelId'); }
+
+let allDocs = [];
+
+async function loadAllDocs() {
+  try {
+    const res = await api.get('/admin/docs');
+    allDocs = res.data || [];
+    populateCopyDropdown();
+  } catch {}
+}
+
+function populateCopyDropdown() {
+  const sel = document.getElementById('copyFrom');
+  const filtered = allDocs.filter(d => d.model_id !== modelId);
+  sel.innerHTML = '<option value="">-- 选择一个已有文档段自动填充 --</option>' +
+    filtered.map(d => `<option value="${d.id}">[${d.model_name}] ${d.title} (${d.http_method})</option>`).join('');
+}
+
+async function copyFromDoc(id) {
+  if (!id) return;
+  try {
+    const res = await api.get('/admin/docs/' + id);
+    const s = res.data;
+    document.getElementById('fTitle').value = s.title || '';
+    document.getElementById('fOrder').value = s.section_order || 0;
+    document.getElementById('fEndpoint').value = s.endpoint_url || '';
+    document.getElementById('fMethod').value = s.http_method || 'POST';
+    document.getElementById('fHeaders').value = typeof s.headers_json === 'string' ? s.headers_json : JSON.stringify(s.headers_json || [], null, 2);
+    document.getElementById('fParams').value = typeof s.params_json === 'string' ? s.params_json : JSON.stringify(s.params_json || [], null, 2);
+    document.getElementById('fReqExample').value = s.request_example || '';
+    document.getElementById('fResExample').value = s.response_example || '';
+    document.getElementById('fNotes').value = s.notes_html || '';
+    showToast('已填充文档内容', 'success');
+  } catch (e) {
+    showToast('引用失败: ' + e.message, 'error');
+  }
+}
+
+async function loadDocs() {
+  const el = document.getElementById('docList');
+  try {
+    const res = await api.get('/admin/docs/' + modelId);
+    const { model, sections } = res.data;
+
+    document.getElementById('pageTitle').textContent = model.name + ' - 文档管理';
+    document.getElementById('pageDesc').textContent = '模型 ID: ' + model.id + ' · 分类: ' + model.category;
+
+    if (!sections.length) {
+      el.innerHTML = '<div class="empty-state">暂无文档段，点击上方按钮创建</div>';
+      return;
+    }
+
+    el.innerHTML = sections.map((s, i) => `
+      <div class="doc-card" style="animation-delay:${i * .05}s">
+        <div class="doc-card-header">
+          <span class="doc-title">${escHtml(s.title)}</span>
+          <div class="doc-meta">
+            <span class="order-badge">排序 ${s.section_order}</span>
+            <span class="method-badge ${s.http_method}">${s.http_method}</span>
+          </div>
+        </div>
+        ${s.endpoint_url ? `<div class="doc-endpoint">${escHtml(s.endpoint_url)}</div>` : ''}
+        <div class="doc-actions">
+          <button class="btn-ghost-sm" onclick='openEdit(${JSON.stringify(s).replace(/'/g, "&#39;")})'>编辑</button>
+          <button class="btn-ghost-sm" style="color:var(--red);border-color:var(--red-light)" onclick="deleteDoc(${s.id})">删除</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state">加载失败: ' + e.message + '</div>';
+  }
+}
+
+function openCreate() {
+  document.getElementById('formTitle').textContent = '新建文档段';
+  document.getElementById('editId').value = '';
+  document.getElementById('fTitle').value = '';
+  document.getElementById('fOrder').value = '0';
+  document.getElementById('fEndpoint').value = '';
+  document.getElementById('fMethod').value = 'POST';
+  document.getElementById('fHeaders').value = '';
+  document.getElementById('fParams').value = '';
+  document.getElementById('fReqExample').value = '';
+  document.getElementById('fResExample').value = '';
+  document.getElementById('fNotes').value = '';
+  document.getElementById('copyFrom').value = '';
+  document.getElementById('copyGroup').style.display = '';
+  document.getElementById('formModal').classList.add('active');
+}
+
+function openEdit(s) {
+  document.getElementById('formTitle').textContent = '编辑文档段';
+  document.getElementById('editId').value = s.id;
+  document.getElementById('copyGroup').style.display = 'none';
+  document.getElementById('fTitle').value = s.title || '';
+  document.getElementById('fOrder').value = s.section_order || 0;
+  document.getElementById('fEndpoint').value = s.endpoint_url || '';
+  document.getElementById('fMethod').value = s.http_method || 'POST';
+  document.getElementById('fHeaders').value = typeof s.headers_json === 'string' ? s.headers_json : JSON.stringify(s.headers_json || [], null, 2);
+  document.getElementById('fParams').value = typeof s.params_json === 'string' ? s.params_json : JSON.stringify(s.params_json || [], null, 2);
+  document.getElementById('fReqExample').value = s.request_example || '';
+  document.getElementById('fResExample').value = s.response_example || '';
+  document.getElementById('fNotes').value = s.notes_html || '';
+  document.getElementById('formModal').classList.add('active');
+}
+
+function closeForm() {
+  document.getElementById('formModal').classList.remove('active');
+}
+
+function parseJsonSafe(str, fallback) {
+  try { return JSON.parse(str); } catch { return fallback; }
+}
+
+async function saveDoc() {
+  const editId = document.getElementById('editId').value;
+  const title = document.getElementById('fTitle').value.trim();
+  if (!title) return showToast('请输入标题', 'error');
+
+  const data = {
+    title,
+    section_order: parseInt(document.getElementById('fOrder').value) || 0,
+    endpoint_url: document.getElementById('fEndpoint').value.trim(),
+    http_method: document.getElementById('fMethod').value,
+    headers_json: parseJsonSafe(document.getElementById('fHeaders').value, []),
+    params_json: parseJsonSafe(document.getElementById('fParams').value, []),
+    request_example: document.getElementById('fReqExample').value,
+    response_example: document.getElementById('fResExample').value,
+    notes_html: document.getElementById('fNotes').value
+  };
+
+  try {
+    if (editId) {
+      await api.put('/admin/docs/' + editId, data);
+      showToast('更新成功', 'success');
+    } else {
+      data.model_id = modelId;
+      await api.post('/admin/docs', data);
+      showToast('创建成功', 'success');
+    }
+    closeForm();
+    loadDocs();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function deleteDoc(id) {
+  if (!confirm('确定要删除此文档段吗？')) return;
+  try {
+    await api.delete('/admin/docs/' + id);
+    showToast('删除成功', 'success');
+    loadDocs();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+document.getElementById('formModal').addEventListener('click', function(e) {
+  if (e.target === this) closeForm();
+});
+
+loadDocs();
+loadAllDocs();
+</script>
+</body>
+</html>

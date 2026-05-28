@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>接口文档 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 60px;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: var(--bg-white);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 60px;
+  bottom: 0;
+  left: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-search {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-white);
+  z-index: 1;
+}
+.sidebar-search input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 14px 0 34px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg);
+  outline: none;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.sidebar-search input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(79,110,247,.1); }
+.sidebar-search-wrap {
+  position: relative;
+}
+.sidebar-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px;
+  color: var(--text-placeholder);
+  pointer-events: none;
+}
+.sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.sidebar-cat {
+  padding: 8px 16px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+}
+.sidebar-item:hover { background: var(--bg); color: var(--text-primary); }
+.sidebar-item.active {
+  color: var(--blue);
+  font-weight: 600;
+  background: var(--blue-light);
+  border-left-color: var(--blue);
+}
+.sidebar-item-icon {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sidebar-item-icon svg { width: 14px; height: 14px; }
+.sidebar-item-icon.image { background: #e8f4e8; color: #3d9a3d; }
+.sidebar-item-icon.video { background: #fef3e2; color: #e89a3c; }
+.sidebar-item-icon.audio { background: var(--purple-light); color: var(--purple); }
+.sidebar-item-icon.text  { background: var(--blue-light); color: var(--blue); }
+.sidebar-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-item-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  margin-left: 260px;
+  padding: 32px 48px 80px;
+  max-width: 960px;
+}
+.doc-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.doc-desc {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+.doc-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.doc-meta-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border);
+}
+.doc-meta-endpoint {
+  font-size: 12px;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  color: var(--text-tertiary);
+}
+
+/* Section */
+.doc-section {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  animation: fadeUp .35s ease-out both;
+}
+.doc-section:nth-child(2) { animation-delay: .05s; }
+.doc-section:nth-child(3) { animation-delay: .1s; }
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.endpoint-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 12px;
+  background: var(--bg);
+  padding: 5px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+.method-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #fff;
+}
+.method-tag.POST { background: #49cc90; }
+.method-tag.GET { background: #61affe; }
+.code-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 6px; }
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.param-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--bg);
+  color: var(--text-tertiary);
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 4px;
+}
+.param-table td { padding: 8px 10px; color: var(--text-secondary); vertical-align: top; }
+.pname { font-family: 'SF Mono', Monaco, Consolas, monospace; font-weight: 600; color: var(--text-primary); font-size: 13px; }
+.preq { color: var(--red); font-size: 11px; margin-left: 2px; }
+.ptype { font-size: 11px; color: var(--text-tertiary); font-family: monospace; }
+.code-block {
+  position: relative;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 8px;
+  padding: 14px;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.code-block .copy-btn {
+  position: absolute;
+  top: 6px; right: 6px;
+  background: rgba(255,255,255,.1);
+  color: #cdd6f4;
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.code-block .copy-btn:hover { background: rgba(255,255,255,.2); }
+.notes-box {
+  background: var(--blue-light);
+  border: 1px solid var(--blue-bg);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+.empty-content {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-tertiary);
+}
+.empty-content-icon { font-size: 48px; opacity: .2; margin-bottom: 12px; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .content { margin-left: 0; padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-search">
+      <div class="sidebar-search-wrap">
+        <svg class="sidebar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="sidebarSearch" placeholder="搜索文档...">
+      </div>
+    </div>
+    <div class="sidebar-list" id="sidebarList"></div>
+  </aside>
+
+  <main class="content" id="content">
+    <div class="empty-content">
+      <div class="empty-content-icon">&#128196;</div>
+      <div>从左侧选择模型查看文档</div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('docs');
+if (!checkAuth()) throw new Error('redirect');
+
+const CAT_NAMES = { image: '图像生成', video: '视频生成', audio: '音频生成', text: '文本生成' };
+const CAT_ICONS = {
+  image: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+  video: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
+  audio: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  text: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>`
+};
+
+let allModels = [];
+let allDocs = {};
+let activeModelId = null;
+
+async function loadAll() {
+  try {
+    const modelsRes = await api.get('/models');
+    allModels = modelsRes.data;
+
+    // Load docs for all models
+    const results = await Promise.all(
+      allModels.map(m => api.get(`/docs/${m.id}`).catch(() => ({ data: { docs: [] } })))
+    );
+    allModels.forEach((m, i) => { allDocs[m.id] = results[i].data.docs || []; });
+
+    renderSidebar();
+
+    // Auto-select first model
+    if (allModels.length) selectModel(allModels[0].id);
+  } catch (err) {
+    document.getElementById('content').innerHTML = `<div class="empty-content"><div>加载失败: ${err.message}</div></div>`;
+  }
+}
+
+function renderSidebar(filter = '') {
+  const list = document.getElementById('sidebarList');
+  const kw = filter.trim().toLowerCase();
+  const cats = ['image', 'text', 'video', 'audio'];
+
+  let html = '';
+  cats.forEach(cat => {
+    const models = allModels.filter(m => {
+      const catMatch = m.category === cat;
+      const kwMatch = !kw || m.name.toLowerCase().includes(kw);
+      return catMatch && kwMatch;
+    });
+    if (!models.length) return;
+
+    html += `<div class="sidebar-cat">${CAT_NAMES[cat] || cat}</div>`;
+    models.forEach(m => {
+      const docCount = (allDocs[m.id] || []).length;
+      html += `
+        <a class="sidebar-item ${m.id === activeModelId ? 'active' : ''}" data-id="${m.id}" onclick="selectModel('${m.id}')">
+          <div class="sidebar-item-icon ${m.category}">${CAT_ICONS[m.category] || ''}</div>
+          <span class="sidebar-item-name">${m.name}</span>
+          <span class="sidebar-item-badge">${docCount}</span>
+        </a>
+      `;
+    });
+  });
+
+  list.innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px">无匹配结果</div>';
+}
+
+async function selectModel(modelId) {
+  activeModelId = modelId;
+  renderSidebar(document.getElementById('sidebarSearch').value);
+
+  const model = allModels.find(m => m.id === modelId);
+  const docs = allDocs[modelId] || [];
+  const content = document.getElementById('content');
+
+  if (!model) return;
+
+  content.innerHTML = `
+    <h1 class="doc-title">${model.name}</h1>
+    <p class="doc-desc">${model.description}</p>
+    <div class="doc-meta">
+      <span class="doc-meta-tag">${CAT_NAMES[model.category] || model.category}</span>
+      <span class="doc-meta-tag">${model.badge === 'free' ? '免费' : '付费'}</span>
+      <span class="doc-meta-endpoint">${model.api_method} ${model.api_endpoint}</span>
+    </div>
+    ${docs.length ? docs.map((doc, i) => renderSection(doc, i)).join('') : '<div class="empty-content"><div>暂无接口文档</div></div>'}
+  `;
+}
+
+function renderSection(doc, i) {
+  const headers = doc.headers_json || [];
+  const params = doc.params_json || [];
+
+  return `
+    <div class="doc-section" style="animation-delay:${i * .06}s">
+      <div class="section-title">${doc.title}</div>
+      <div class="endpoint-bar">
+        <span class="method-tag ${doc.http_method}">${doc.http_method}</span>
+        ${doc.endpoint_url}
+      </div>
+
+      ${headers.length ? `
+        <div class="code-label">请求头</div>
+        <table class="param-table">
+          <tr><th>名称</th><th>值</th></tr>
+          ${headers.map(h => `<tr><td class="pname">${h.name}</td><td>${h.value}</td></tr>`).join('')}
+        </table>
+      ` : ''}
+
+      ${params.length ? `
+        <div class="code-label">请求参数</div>
+        <table class="param-table">
+          <tr><th>参数</th><th>类型</th><th>说明</th></tr>
+          ${params.map(p => `
+            <tr>
+              <td><span class="pname">${p.name}</span>${p.required ? '<span class="preq">*</span>' : ''}</td>
+              <td><span class="ptype">${p.type || '-'}</span></td>
+              <td>${p.desc || '-'}</td>
+            </tr>
+          `).join('')}
+        </table>
+      ` : ''}
+
+      ${doc.request_example ? `
+        <div class="code-label">请求示例</div>
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button>${escHtml(doc.request_example)}</div>
+      ` : ''}
+
+      ${doc.response_example ? `
+        <div class="code-label">响应示例</div>
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button>${escHtml(doc.response_example)}</div>
+      ` : ''}
+
+      ${doc.notes_html ? `<div class="notes-box">${doc.notes_html}</div>` : ''}
+    </div>
+  `;
+}
+
+function copyCode(btn) {
+  const text = btn.parentElement.textContent.replace('复制', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制';
+    setTimeout(() => btn.textContent = '复制', 1500);
+  });
+}
+
+// Sidebar search
+document.getElementById('sidebarSearch').addEventListener('input', e => {
+  renderSidebar(e.target.value);
+});
+
+loadAll();
+</script>
+</body>
+</html>

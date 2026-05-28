@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>模型 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+/* Layout */
+.layout {
+  display: flex;
+  height: calc(100vh - 56px);
+  margin-top: 56px;
+}
+
+/* Left Panel */
+.panel-left {
+  width: 400px;
+  min-width: 400px;
+  background: var(--bg-white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Model Header */
+.model-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.model-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.model-icon svg {
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
+
+.model-icon.image { background: linear-gradient(135deg, #34d399, #059669); }
+.model-icon.video { background: linear-gradient(135deg, #fbbf24, #d97706); }
+.model-icon.audio { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+.model-icon.text  { background: linear-gradient(135deg, #818cf8, #6366f1); }
+
+.model-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.model-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.model-endpoint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  margin-top: 2px;
+}
+
+.model-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.model-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border);
+}
+
+.tag.badge-free {
+  background: var(--green-light);
+  color: var(--green);
+  border-color: transparent;
+}
+
+.tag.badge-paid {
+  background: var(--orange-light);
+  color: var(--orange);
+  border-color: transparent;
+}
+
+/* Form */
+.form-section {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  height: 38px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.form-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(79,110,247,.1);
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 100px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  transition: var(--transition);
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.form-textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(79,110,247,.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-placeholder);
+}
+
+/* Key Input */
+.key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.key-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.key-input-wrap .form-input {
+  width: 100%;
+  padding-right: 36px;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+}
+
+.key-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 0;
+  transition: color .2s;
+}
+
+.key-toggle:hover {
+  color: var(--text-primary);
+}
+
+.key-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.key-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+  transition: background .3s;
+}
+
+.key-dot.ok { background: var(--green); }
+
+/* Ratio Grid */
+.ratio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 6px;
+}
+
+.ratio-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 4px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.ratio-btn:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
+}
+
+.ratio-btn.active {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.ratio-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  margin-bottom: 4px;
+}
+
+.ratio-preview div {
+  border: 1.5px solid var(--text-placeholder);
+  border-radius: 2px;
+  transition: all .2s;
+}
+
+.ratio-btn.active .ratio-preview div {
+  border-color: rgba(255,255,255,.7);
+}
+
+.ratio-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.ratio-btn.active .ratio-label {
+  color: #fff;
+}
+
+/* Ref Input */
+.ref-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.ref-row .form-input {
+  flex: 1;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-tertiary);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.btn-icon:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.btn-icon.danger:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: var(--red-light);
+}
+
+.btn-add {
+  font-size: 12px;
+  color: var(--blue);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-weight: 500;
+}
+
+.btn-add:hover {
+  text-decoration: underline;
+}
+
+/* Generate Button */
+.gen-btn {
+  width: 100%;
+  height: 44px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.gen-btn:hover {
+  background: var(--blue-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79,110,247,.25);
+}
+
+.gen-btn:active {
+  transform: translateY(0);
+}
+
+.gen-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.gen-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Right Panel */
+.panel-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.result-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Result Area */
+.result-area {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.result-placeholder {
+  text-align: center;
+  color: var(--text-tertiary);
+}
+
+.result-placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: .3;
+}
+
+.result-placeholder h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.result-placeholder p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Loading */
+.loading-state {
+  text-align: center;
+  width: 100%;
+}
+
+.spinner-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+
+.loading-state p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.pulse-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.pulse-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.pulse-dots span:nth-child(2) { animation-delay: .2s; }
+.pulse-dots span:nth-child(3) { animation-delay: .4s; }
+
+@keyframes pulse {
+  0%, 80%, 100% { opacity: .3; transform: scale(.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+/* Task Card */
+.task-card {
+  width: 100%;
+  margin-bottom: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.task-item {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.task-item strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge.pending {
+  background: var(--orange-light);
+  color: var(--orange);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+
+.status-badge.success {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.status-badge.failed {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+/* Result Images */
+.result-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.result-images img {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.result-images img:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+/* Error */
+.error-card {
+  background: var(--red-light);
+  border: 1px solid var(--red);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  width: 100%;
+  text-align: center;
+}
+
+.error-card h3 {
+  color: var(--red);
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.error-card p {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* History */
+.history-section {
+  margin-top: 24px;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.history-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.history-count {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.history-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.history-thumb:hover {
+  border-color: var(--blue);
+  transform: scale(1.05);
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,.88);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.lightbox.show { display: flex; }
+
+.lightbox img {
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: var(--radius);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+    height: auto;
+  }
+  .panel-left {
+    width: 100%;
+    min-width: 0;
+    max-height: 50vh;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-right {
+    min-height: 50vh;
+  }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="layout">
+  <div class="panel-left">
+    <div class="panel-scroll">
+      <div class="model-header">
+        <div class="model-icon" id="modelIcon"></div>
+        <div class="model-info">
+          <div class="model-name" id="modelName">加载中...</div>
+          <div class="model-endpoint" id="modelEndpoint"></div>
+        </div>
+      </div>
+
+      <div class="model-desc" id="modelDesc"></div>
+      <div class="model-tags" id="modelTags"></div>
+
+      <div class="form-section">
+        <div class="form-label">API 密钥</div>
+        <div class="key-row">
+          <div class="key-dot" id="keyDot"></div>
+          <div class="key-input-wrap">
+            <input class="form-input" type="password" id="apiKey" placeholder="输入你的 API 密钥">
+            <button class="key-toggle" id="keyToggle" type="button" onclick="toggleKeyVisibility()">
+              <svg id="eyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              <svg id="eyeOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-label">提示词</div>
+        <textarea class="form-textarea" id="promptInput" placeholder="描述你想要生成的内容..."></textarea>
+      </div>
+
+      <div id="extraParams"></div>
+
+      <button class="gen-btn" id="genBtn" onclick="generate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        开始生成
+      </button>
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <div class="result-scroll">
+      <div class="result-area" id="resultArea">
+        <div class="result-placeholder">
+          <div class="result-placeholder-icon">&#x1f3a8;</div>
+          <h3>准备就绪</h3>
+          <p>在左侧输入提示词并选择参数<br>点击「开始生成」创作内容</p>
+        </div>
+      </div>
+
+      <div class="history-section" id="historySection" style="display:none">
+        <div class="history-header">
+          <div class="history-title">生成历史</div>
+          <div class="history-count" id="historyCount"></div>
+        </div>
+        <div class="history-grid" id="historyGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
+  <img id="lightboxImg" src="">
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('home');
+if (!checkAuth()) throw new Error('redirect');
+
+const CAT_ICONS = {
+  image: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+  video: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
+  audio: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  text: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>`
+};
+
+const RATIOS = [
+  { v: 'auto', l: '自动', w: 20, h: 20 },
+  { v: '1:1', l: '1:1', w: 20, h: 20 },
+  { v: '3:2', l: '3:2', w: 24, h: 16 },
+  { v: '2:3', l: '2:3', w: 16, h: 24 },
+  { v: '16:9', l: '16:9', w: 28, h: 16 },
+  { v: '9:16', l: '9:16', w: 16, h: 28 },
+  { v: '4:3', l: '4:3', w: 24, h: 18 },
+  { v: '3:4', l: '3:4', w: 18, h: 24 },
+  { v: '21:9', l: '21:9', w: 28, h: 12 },
+  { v: '9:21', l: '9:21', w: 12, h: 28 },
+  { v: '1:3', l: '1:3', w: 12, h: 26 },
+  { v: '3:1', l: '3:1', w: 26, h: 12 },
+  { v: '2:1', l: '2:1', w: 26, h: 13 },
+  { v: '1:2', l: '1:2', w: 13, h: 26 }
+];
+
+const modelId = new URLSearchParams(location.search).get('id');
+let modelData = null;
+let docsData = [];
+let history = [];
+let selectedRatio = 'auto';
+let busy = false;
+let timer = null;
+
+async function loadModel() {
+  if (!modelId) {
+    document.getElementById('modelName').textContent = '未指定模型';
+    return;
+  }
+
+  try {
+    const [modelRes, docsRes] = await Promise.all([
+      api.get(`/models/${modelId}`),
+      api.get(`/docs/${modelId}`)
+    ]);
+
+    modelData = modelRes.data;
+    docsData = docsRes.data.docs || [];
+    document.title = `${modelData.name} - ModelHub`;
+
+    const icon = document.getElementById('modelIcon');
+    icon.className = `model-icon ${modelData.category}`;
+    icon.innerHTML = CAT_ICONS[modelData.category] || '';
+
+    document.getElementById('modelName').textContent = modelData.name;
+    document.getElementById('modelEndpoint').textContent = `${modelData.api_method} ${modelData.api_endpoint}`;
+    document.getElementById('modelDesc').textContent = modelData.description;
+
+    const tags = modelData.tags || [];
+    document.getElementById('modelTags').innerHTML = `
+      <span class="tag badge-${modelData.badge}">${modelData.badge === 'free' ? '免费' : '付费'}</span>
+      <span class="tag">${modelData.price_label}</span>
+      ${tags.map(t => `<span class="tag">${t}</span>`).join('')}
+    `;
+
+    document.getElementById('apiKey').value = localStorage.getItem('modelhub_api_key') || '';
+    updateKeyDot();
+    buildExtraParams();
+    loadHistory();
+
+    // Resume pending task if exists for this model
+    if (!resumePendingTask()) {
+      // No pending task, ready to go
+    }
+  } catch (err) {
+    document.getElementById('modelName').textContent = '加载失败';
+    document.getElementById('modelDesc').textContent = err.message;
+  }
+}
+
+function buildExtraParams() {
+  const area = document.getElementById('extraParams');
+  if (!docsData.length) return;
+
+  const params = docsData[0].params_json || [];
+  let html = '';
+
+  params.forEach(p => {
+    if (p.name === 'prompt') return;
+
+    if (p.name === 'size') {
+      const opts = (p.desc || '').match(/[\d:]+[a-z]*/g) || ['auto', '1:1', '16:9', '9:16', '3:2', '2:3'];
+      selectedRatio = opts[0] || 'auto';
+      const filteredRatios = RATIOS.filter(r => opts.includes(r.v));
+
+      html += `
+        <div class="form-section">
+          <div class="form-label">${p.desc || '输出比例'}</div>
+          <div class="ratio-grid" id="ratioGrid">
+            ${filteredRatios.map(r => `
+              <div class="ratio-btn ${r.v === selectedRatio ? 'active' : ''}" data-v="${r.v}" onclick="setRatio('${r.v}')">
+                <div class="ratio-preview"><div style="width:${r.w}px;height:${r.h}px"></div></div>
+                <div class="ratio-label">${r.l}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else if (p.name === 'urls') {
+      html += `
+        <div class="form-section">
+          <div class="form-label">${p.desc || '参考图片'}</div>
+          <div id="refList"></div>
+          <button class="btn-add" onclick="addRef()">+ 添加参考图</button>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="form-section">
+          <div class="form-label">${p.desc || p.name}</div>
+          <input class="form-input" id="param_${p.name}" placeholder="${p.desc || p.name}">
+        </div>
+      `;
+    }
+  });
+
+  area.innerHTML = html;
+}
+
+function setRatio(v) {
+  selectedRatio = v;
+  document.querySelectorAll('.ratio-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.v === v);
+  });
+}
+
+let refCount = 0;
+function addRef() {
+  refCount++;
+  const d = document.createElement('div');
+  d.className = 'ref-row';
+  d.id = 'ref' + refCount;
+  d.innerHTML = `
+    <input class="form-input" placeholder="参考图片 URL">
+    <button class="btn-icon danger" onclick="this.parentElement.remove()">×</button>
+  `;
+  document.getElementById('refList').appendChild(d);
+}
+
+function getRefs() {
+  return Array.from(document.querySelectorAll('#refList .ref-row input'))
+    .map(i => i.value.trim())
+    .filter(Boolean);
+}
+
+// Key
+const keyInput = document.getElementById('apiKey');
+const keyDot = document.getElementById('keyDot');
+
+function updateKeyDot() {
+  keyDot.classList.toggle('ok', !!keyInput.value.trim());
+}
+
+keyInput.addEventListener('input', () => {
+  localStorage.setItem('modelhub_api_key', keyInput.value.trim());
+  updateKeyDot();
+});
+
+function toggleKeyVisibility() {
+  const isPassword = keyInput.type === 'password';
+  keyInput.type = isPassword ? 'text' : 'password';
+  document.getElementById('eyeOff').style.display = isPassword ? 'none' : 'block';
+  document.getElementById('eyeOn').style.display = isPassword ? 'block' : 'none';
+}
+
+// Pending task persistence
+const PENDING_KEY = 'modelhub_pending_tasks';
+
+function getPendingTasks() {
+  try { return JSON.parse(localStorage.getItem(PENDING_KEY) || '{}'); } catch { return {}; }
+}
+
+function savePendingTask(taskId, data) {
+  const tasks = getPendingTasks();
+  tasks[taskId] = data;
+  localStorage.setItem(PENDING_KEY, JSON.stringify(tasks));
+}
+
+function removePendingTask(taskId) {
+  const tasks = getPendingTasks();
+  delete tasks[taskId];
+  localStorage.setItem(PENDING_KEY, JSON.stringify(tasks));
+}
+
+function resumePendingTask() {
+  const tasks = getPendingTasks();
+  for (const [taskId, data] of Object.entries(tasks)) {
+    if (data.model_id === modelId) {
+      // Skip stale tasks (older than 1 hour)
+      if (data.time && Date.now() - data.time > 3600000) {
+        removePendingTask(taskId);
+        continue;
+      }
+      showTask(taskId, null, true);
+      poll(taskId, data.key, data.record_id, true);
+      return true;
+    }
+  }
+  return false;
+}
+
+// Generate
+async function generate() {
+  if (busy) return;
+
+  const key = keyInput.value.trim();
+  const prompt = document.getElementById('promptInput').value.trim();
+
+  if (!key) return showErr('请先输入 API 密钥');
+  if (!prompt) return showErr('请输入提示词');
+
+  localStorage.setItem('modelhub_api_key', key);
+
+  const params = { prompt, size: selectedRatio };
+  const urls = getRefs();
+  if (urls.length) params.urls = urls;
+
+  document.querySelectorAll('[id^="param_"]').forEach(el => {
+    const name = el.id.replace('param_', '');
+    if (el.value.trim()) params[name] = el.value.trim();
+  });
+
+  setBusy(true);
+  showLoading();
+
+  // 管理员不创建调用记录（id=0 不在 users 表中）
+  let recordId = null;
+  const authState = getAuthState();
+  if (authState.isLoggedIn && !authState.isAdmin) {
+    try {
+      const r = await api.post('/assets', { model_id: modelId, request_params: params });
+      recordId = r.data.id;
+    } catch {}
+  }
+
+  try {
+    const fullUrl = modelData.api_base_url + modelData.api_endpoint + '?key=' + encodeURIComponent(key);
+
+    if (modelData.is_async) {
+      const submitRes = await fetch(fullUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': key
+        },
+        body: JSON.stringify(params)
+      });
+      const submitData = await submitRes.json();
+
+      if (submitData.code !== 200) throw new Error(submitData.msg || '提交失败');
+
+      const taskId = submitData.data.id;
+      if (recordId) api.put(`/assets/${recordId}`, { task_id: taskId }).catch(() => {});
+      savePendingTask(taskId, { key, record_id: recordId, model_id: modelId, prompt, time: Date.now() });
+      showTask(taskId, submitData.exec_time);
+      poll(taskId, key, recordId);
+    } else {
+      const res = await fetch(fullUrl, {
+        method: modelData.api_method || 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': key
+        },
+        body: modelData.api_method === 'GET' ? undefined : JSON.stringify(params)
+      });
+      const data = await res.json();
+
+      if (data.code !== 200) throw new Error(data.msg || '请求失败');
+
+      const resultUrls = data.data?.urls || (data.data?.result ? [data.data.result] : []);
+      showResult(resultUrls);
+      setBusy(false);
+
+      if (recordId) {
+        api.put(`/assets/${recordId}`, {
+          status: 'success',
+          response_url: resultUrls[0] || '',
+          response_urls: resultUrls
+        }).catch(() => {});
+      }
+    }
+  } catch (err) {
+    showErr(err.message);
+    setBusy(false);
+    if (recordId) {
+      api.put(`/assets/${recordId}`, { status: 'failed', error_message: err.message }).catch(() => {});
+    }
+  }
+}
+
+function poll(id, key, recordId, resumed) {
+  if (timer) clearInterval(timer);
+  if (resumed) setBusy(true);
+  let attempts = 0;
+
+  timer = setInterval(async () => {
+    attempts++;
+    if (attempts > 120) {
+      clearInterval(timer);
+      removePendingTask(id);
+      showErr('轮询超时');
+      setBusy(false);
+      if (recordId) api.put(`/assets/${recordId}`, { status: 'failed', error_message: '超时' }).catch(() => {});
+      return;
+    }
+
+    try {
+      const pollUrl = modelData.api_base_url + '/api/async/detail?id=' + encodeURIComponent(id) + '&key=' + encodeURIComponent(key);
+      const r = await fetch(pollUrl, {
+        headers: { 'Authorization': key }
+      });
+      const d = await r.json();
+
+      if (d.code !== 200) return;
+
+      if (d.data.status === 2) {
+        clearInterval(timer);
+        removePendingTask(id);
+        setBusy(false);
+        const resultUrls = d.data.urls || (d.data.result ? [d.data.result] : []);
+        showResult(resultUrls);
+
+        if (recordId) {
+          api.put(`/assets/${recordId}`, {
+            status: 'success',
+            response_url: resultUrls[0] || '',
+            response_urls: resultUrls
+          }).catch(() => {});
+        }
+      } else if (d.data.status === 3) {
+        clearInterval(timer);
+        removePendingTask(id);
+        setBusy(false);
+        showErr(d.data.message || '生成失败');
+
+        if (recordId) {
+          api.put(`/assets/${recordId}`, { status: 'failed', error_message: d.data.message || '' }).catch(() => {});
+        }
+      }
+    } catch {}
+  }, 3000);
+}
+
+function setBusy(v) {
+  busy = v;
+  const btn = document.getElementById('genBtn');
+  btn.disabled = v;
+  btn.innerHTML = v
+    ? '<div class="spinner-ring" style="width:16px;height:16px;border-width:2px;margin:0"></div> 生成中...'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 开始生成';
+}
+
+function showLoading() {
+  document.getElementById('resultArea').innerHTML = `
+    <div class="loading-state">
+      <div class="spinner-ring"></div>
+      <h3>正在生成</h3>
+      <p>AI 正在创作中，请稍候...</p>
+      <div class="pulse-dots"><span></span><span></span><span></span></div>
+    </div>
+  `;
+}
+
+function showTask(id, execTime, resumed) {
+  const area = document.getElementById('resultArea');
+  if (resumed) {
+    area.innerHTML = `
+      <div class="loading-state">
+        <div class="spinner-ring"></div>
+        <h3>恢复任务</h3>
+        <p>正在恢复轮询任务 ${id}...</p>
+      </div>
+    `;
+  }
+  const card = document.createElement('div');
+  card.className = 'task-card';
+  card.innerHTML = `
+    <div class="task-item">任务 ID: <strong>${id}</strong></div>
+    ${execTime ? `<div class="task-item">耗时: <strong>${execTime.toFixed(2)}s</strong></div>` : ''}
+    <div class="task-item">状态: <span class="status-badge pending">${resumed ? '轮询中' : '排队中'}</span></div>
+  `;
+  area.insertBefore(card, area.firstChild);
+}
+
+function showResult(urls) {
+  const area = document.getElementById('resultArea');
+
+  if (!urls.length) {
+    area.innerHTML = '<div class="result-placeholder"><h3>未获取到结果</h3></div>';
+    return;
+  }
+
+  area.innerHTML = `
+    <div class="task-card" style="width:100%">
+      <div class="task-item">状态: <span class="status-badge success">生成成功</span></div>
+      <div class="task-item">结果: <strong>${urls.length} 张</strong></div>
+    </div>
+    <div class="result-images">
+      ${urls.map(u => `<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}
+    </div>
+  `;
+
+  loadHistory();
+}
+
+function showErr(msg) {
+  document.getElementById('resultArea').innerHTML = `
+    <div class="error-card">
+      <h3>生成失败</h3>
+      <p>${msg}</p>
+    </div>
+  `;
+}
+
+function openLightbox(url) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightbox').classList.add('show');
+}
+
+async function loadHistory() {
+  const section = document.getElementById('historySection');
+  const grid = document.getElementById('historyGrid');
+  const count = document.getElementById('historyCount');
+
+  try {
+    const res = await api.get(`/assets?model_id=${modelId}&limit=50`);
+    const records = res.data.list || [];
+    history = [];
+    records.forEach(r => {
+      if (r.response_url && !history.includes(r.response_url)) {
+        history.push(r.response_url);
+      }
+      if (r.response_urls && Array.isArray(r.response_urls)) {
+        r.response_urls.forEach(u => {
+          if (u && !history.includes(u)) history.push(u);
+        });
+      }
+    });
+  } catch {}
+
+  if (!history.length) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  count.textContent = `${history.length} 项`;
+  grid.innerHTML = history.map(u => `
+    <img class="history-thumb" src="${u}" onclick="openLightbox('${u}')" loading="lazy">
+  `).join('');
+}
+
+loadModel();
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>接口文档 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 100px 48px 80px;
+}
+.page-title {
+  font-size: 28px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.page-desc {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin-bottom: 40px;
+}
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+.doc-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+  animation: fadeUp .4s ease-out both;
+}
+.doc-card:hover {
+  border-color: transparent;
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
+}
+.doc-card-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.doc-card-icon.image { background: #e8f4e8; color: #3d9a3d; }
+.doc-card-icon.video { background: #fef3e2; color: #e89a3c; }
+.doc-card-icon.audio { background: var(--purple-light); color: var(--purple); }
+.doc-card-icon.text  { background: var(--blue-light); color: var(--blue); }
+.doc-card-name {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.doc-card-count {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.doc-card-arrow {
+  float: right;
+  color: var(--text-placeholder);
+  font-size: 18px;
+  margin-top: -24px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 90px 20px 60px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+  <h1 class="page-title">接口文档</h1>
+  <p class="page-desc">查看各模型的 API 接口说明和调用示例</p>
+  <div class="doc-grid" id="docGrid"></div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('docs');
+
+const CAT_INFO = {
+  image: { name: '图像生成', icon: 'I', desc: '图像生成与处理相关接口' },
+  video: { name: '视频生成', icon: 'V', desc: '视频生成与处理相关接口' },
+  audio: { name: '音频生成', icon: 'A', desc: '音频生成与语音合成接口' },
+  text:  { name: '文本生成', icon: 'T', desc: '文本理解与生成相关接口' }
+};
+
+async function loadDocs() {
+  try {
+    const [docsRes, modelsRes] = await Promise.all([
+      api.get('/docs'),
+      api.get('/models')
+    ]);
+
+    const categories = docsRes.data;
+    const models = modelsRes.data;
+    const grid = document.getElementById('docGrid');
+
+    const cats = ['image', 'video', 'audio', 'text'];
+    grid.innerHTML = cats.map((cat, i) => {
+      const info = CAT_INFO[cat];
+      const catData = categories.find(c => c.category === cat);
+      const modelCount = models.filter(m => m.category === cat).length;
+      const docCount = catData ? catData.doc_count : 0;
+
+      return `
+        <a class="doc-card" href="/pages/docs-category.html?cat=${cat}" style="animation-delay:${i * .08}s">
+          <div class="doc-card-icon ${cat}">${info.icon}</div>
+          <div class="doc-card-arrow">&#8594;</div>
+          <div class="doc-card-name">${info.name}</div>
+          <div class="doc-card-count">${modelCount} 个模型 · ${docCount} 篇文档</div>
+        </a>
+      `;
+    }).join('');
+  } catch (err) {
+    document.getElementById('docGrid').innerHTML = `<div class="empty-state">加载失败: ${err.message}</div>`;
+  }
+}
+
+loadDocs();
+</script>
+</body>
+</html>

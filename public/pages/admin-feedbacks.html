@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>反馈管理 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 84px 48px 80px;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  animation: fadeUp .4s ease-out;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: var(--transition);
+}
+.back-btn:hover { color: var(--blue); }
+.back-btn svg { width: 16px; height: 16px; }
+.page-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(232,154,60,.25);
+}
+.page-icon svg { width: 22px; height: 22px; color: #fff; }
+.page-title { font-size: 26px; font-weight: 800; margin-bottom: 2px; }
+.page-desc { font-size: 13px; color: var(--text-tertiary); }
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  animation: fadeUp .4s ease-out .1s both;
+}
+.filter-tag {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+.filter-tag:hover { border-color: var(--blue); }
+.filter-tag.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+.feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.feedback-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  transition: var(--transition);
+  cursor: pointer;
+  animation: fadeUp .3s ease-out both;
+}
+.feedback-card:hover { border-color: var(--blue); }
+.feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.feedback-title {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.feedback-user-tag {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.feedback-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.feedback-status.pending { background: var(--orange-light); color: var(--orange); }
+.feedback-status.accepted { background: var(--green-light); color: var(--green); }
+.feedback-status.rejected { background: var(--red-light); color: var(--red); }
+.feedback-status.replied { background: var(--blue-light); color: var(--blue); }
+.feedback-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Expandable detail */
+.feedback-detail {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+.feedback-card.expanded .feedback-detail { display: block; }
+.feedback-content {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+.feedback-reply {
+  padding: 10px 12px;
+  background: var(--blue-light);
+  border-radius: 8px;
+  border-left: 3px solid var(--blue);
+  margin-bottom: 8px;
+}
+.feedback-reply-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+.feedback-reply-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.feedback-reply-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+.feedback-actions {
+  display: flex;
+  gap: 6px;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+.action-btn {
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+.action-btn:hover { border-color: var(--blue); color: var(--blue); }
+.action-btn.accept { color: var(--green); border-color: var(--green-light); }
+.action-btn.accept:hover { background: var(--green-light); }
+.action-btn.reject { color: var(--red); border-color: var(--red-light); }
+.action-btn.reject:hover { background: var(--red-light); }
+.action-btn.reply { color: var(--blue); border-color: var(--blue-light); }
+.action-btn.reply:hover { background: var(--blue-light); }
+
+/* Reply inline form */
+.reply-form {
+  margin-top: 8px;
+  display: none;
+}
+.reply-form.active { display: block; }
+.reply-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  min-height: 80px;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+.reply-textarea:focus { border-color: var(--blue); }
+.reply-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.btn-send {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--blue);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-send:hover { opacity: .85; }
+.btn-cancel-sm {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+.page-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.page-btn:hover { border-color: var(--blue); }
+.page-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+.page-info { font-size: 13px; color: var(--text-tertiary); }
+
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 76px 16px 60px; }
+  .page-title { font-size: 20px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .feedback-row { flex-wrap: wrap; gap: 6px; }
+  .feedback-title { font-size: 13px; }
+  .feedback-user-tag { max-width: 70px; }
+  .filter-bar { gap: 6px; }
+  .filter-tag { padding: 5px 12px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+  <a href="/pages/admin.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+    返回管理后台
+  </a>
+
+  <div class="page-header">
+    <div class="page-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <div>
+      <h1 class="page-title">反馈管理</h1>
+      <p class="page-desc">查看用户反馈，接受建议并回复</p>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-tag active" data-status="" onclick="filterBy(this, '')">全部</span>
+    <span class="filter-tag" data-status="pending" onclick="filterBy(this, 'pending')">待处理</span>
+    <span class="filter-tag" data-status="accepted" onclick="filterBy(this, 'accepted')">已接受</span>
+    <span class="filter-tag" data-status="rejected" onclick="filterBy(this, 'rejected')">已拒绝</span>
+    <span class="filter-tag" data-status="replied" onclick="filterBy(this, 'replied')">已回复</span>
+  </div>
+
+  <div class="feedback-list" id="feedbackList"></div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('admin');
+if (!checkAuth()) throw new Error('redirect');
+if (!getAuthState().isAdmin) { window.location.href = '/'; throw new Error('redirect'); }
+
+const STATUS_TEXT = { pending: '待处理', accepted: '已接受', rejected: '已拒绝', replied: '已回复' };
+let currentFilter = '';
+let currentPage = 1;
+
+function filterBy(el, status) {
+  document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = status;
+  currentPage = 1;
+  loadFeedbacks();
+}
+
+async function loadFeedbacks(page) {
+  if (page) currentPage = page;
+  const el = document.getElementById('feedbackList');
+
+  try {
+    const params = new URLSearchParams({ page: currentPage, limit: 20 });
+    if (currentFilter) params.set('status', currentFilter);
+    const res = await api.get('/admin/feedbacks?' + params);
+    const { list, total, page: p, limit } = res.data;
+
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state">暂无反馈数据</div>';
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    el.innerHTML = list.map((fb, i) => `
+      <div class="feedback-card" style="animation-delay:${i * .03}s" onclick="this.classList.toggle('expanded')">
+        <div class="feedback-row">
+          <span class="feedback-title">${escHtml(fb.title)}</span>
+          <span class="feedback-user-tag">${escHtml(fb.username)}</span>
+          <span class="feedback-status ${fb.status}">${STATUS_TEXT[fb.status] || fb.status}</span>
+          <span class="feedback-time">${formatTime(fb.created_at)}</span>
+        </div>
+        <div class="feedback-detail" onclick="event.stopPropagation()">
+          <div class="feedback-content">${escHtml(fb.content)}</div>
+          ${fb.admin_reply ? `
+            <div class="feedback-reply">
+              <div class="feedback-reply-label">管理员回复</div>
+              <div class="feedback-reply-text">${escHtml(fb.admin_reply)}</div>
+              ${fb.replied_at ? `<div class="feedback-reply-time">${formatTime(fb.replied_at)}</div>` : ''}
+            </div>
+          ` : ''}
+          ${fb.status === 'pending' ? `
+            <div class="feedback-actions">
+              <button class="action-btn accept" onclick="updateStatus(${fb.id}, 'accepted')">接受</button>
+              <button class="action-btn reject" onclick="updateStatus(${fb.id}, 'rejected')">拒绝</button>
+              <button class="action-btn reply" onclick="toggleReply(${fb.id})">回复</button>
+            </div>
+            <div class="reply-form" id="replyForm-${fb.id}">
+              <textarea class="reply-textarea" id="replyText-${fb.id}" placeholder="输入回复内容..."></textarea>
+              <div class="reply-actions">
+                <button class="btn-cancel-sm" onclick="toggleReply(${fb.id})">取消</button>
+                <button class="btn-send" onclick="sendReply(${fb.id})">发送回复</button>
+              </div>
+            </div>
+          ` : (fb.status === 'accepted' || fb.status === 'rejected') && !fb.admin_reply ? `
+            <div class="feedback-actions">
+              <button class="action-btn reply" onclick="toggleReply(${fb.id})">回复</button>
+            </div>
+            <div class="reply-form" id="replyForm-${fb.id}">
+              <textarea class="reply-textarea" id="replyText-${fb.id}" placeholder="输入回复内容..."></textarea>
+              <div class="reply-actions">
+                <button class="btn-cancel-sm" onclick="toggleReply(${fb.id})">取消</button>
+                <button class="btn-send" onclick="sendReply(${fb.id})">发送回复</button>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    renderPagination(total, p, limit);
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state">加载失败: ' + e.message + '</div>';
+  }
+}
+
+function renderPagination(total, page, limit) {
+  const pages = Math.ceil(total / limit);
+  const el = document.getElementById('pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="loadFeedbacks(${page - 1})" ${page <= 1 ? 'disabled' : ''}>上一页</button>`;
+  for (let i = 1; i <= pages; i++) {
+    html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadFeedbacks(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="loadFeedbacks(${page + 1})" ${page >= pages ? 'disabled' : ''}>下一页</button>`;
+  html += `<span class="page-info">共 ${total} 条</span>`;
+  el.innerHTML = html;
+}
+
+function toggleReply(id) {
+  const form = document.getElementById('replyForm-' + id);
+  form.classList.toggle('active');
+  if (form.classList.contains('active')) {
+    document.getElementById('replyText-' + id).focus();
+  }
+}
+
+async function updateStatus(id, status) {
+  try {
+    await api.put('/admin/feedbacks/' + id + '/status', { status });
+    showToast('状态更新成功', 'success');
+    loadFeedbacks();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function sendReply(id) {
+  const reply = document.getElementById('replyText-' + id).value.trim();
+  if (!reply) return showToast('请输入回复内容', 'error');
+
+  try {
+    await api.post('/admin/feedbacks/' + id + '/reply', { reply });
+    showToast('回复成功', 'success');
+    loadFeedbacks();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+loadFeedbacks(1);
+</script>
+</body>
+</html>

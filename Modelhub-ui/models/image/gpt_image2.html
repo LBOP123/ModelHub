@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPT Image 2 - 图像生成 - ModelHub</title>
+<style>
+:root{
+  --bg:#fff;--bg2:#f8f9fb;--bg3:#f1f3f5;
+  --text:#1a1a2e;--text2:#555;--text3:#888;
+  --border:#e5e7eb;
+  --accent:#6366f1;--accent-light:#eef2ff;--accent-text:#4f46e5;
+  --card-bg:#fff;
+  --green:#059669;--green-light:#ecfdf5;
+  --amber:#d97706;--amber-light:#fffbeb;
+  --red:#dc2626;--red-light:#fef2f2;
+  --shadow:0 1px 3px rgba(0,0,0,.06);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0f0f14;--bg2:#16161d;--bg3:#1e1e28;
+    --text:#e8e8ed;--text2:#a0a0b0;--text3:#666;
+    --border:#2a2a35;
+    --accent:#818cf8;--accent-light:rgba(99,102,241,.1);--accent-text:#a5b4fc;
+    --card-bg:#16161d;
+    --green:#34d399;--green-light:rgba(52,211,153,.08);
+    --amber:#fbbf24;--amber-light:rgba(251,191,36,.08);
+    --red:#f87171;--red-light:rgba(248,113,113,.08);
+    --shadow:0 1px 3px rgba(0,0,0,.3);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(16px);background:rgba(255,255,255,.85);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center}
+@media(prefers-color-scheme:dark){nav{background:rgba(15,15,20,.85)}}
+.nav-brand{font-size:20px;font-weight:700;color:var(--accent);text-decoration:none;position:absolute;left:40px}
+.nav-center{flex:1;display:flex;justify-content:center;gap:32px}
+.nav-center a{color:var(--text2);text-decoration:none;font-size:14px;transition:color .2s}
+.nav-center a:hover{color:var(--text)}
+.nav-right{position:absolute;right:40px}
+
+.main{position:relative;z-index:1;display:flex;min-height:100vh;padding-top:60px}
+
+.panel-left{width:460px;min-width:460px;border-right:1px solid var(--border);padding:28px;overflow-y:auto;height:calc(100vh - 60px);position:sticky;top:60px;background:var(--bg)}
+.panel-title{font-size:20px;font-weight:700;margin-bottom:2px}
+.panel-model{font-size:13px;color:var(--accent);font-weight:600;margin-bottom:6px}
+.panel-desc{font-size:13px;color:var(--text2);margin-bottom:28px}
+
+.form-group{margin-bottom:22px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:1px}
+
+textarea,.text-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;font-family:inherit}
+textarea:focus,.text-input:focus{border-color:var(--accent)}
+textarea::placeholder,.text-input::placeholder{color:var(--text3)}
+textarea{min-height:100px;resize:vertical;line-height:1.6}
+
+.ratio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.ratio-btn{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 6px;text-align:center;cursor:pointer;transition:all .2s}
+.ratio-btn:hover{border-color:var(--accent)}
+.ratio-btn.active{border-color:var(--accent);background:var(--accent-light)}
+.ratio-btn .rv{display:flex;align-items:center;justify-content:center;margin:0 auto 5px}
+.ratio-btn .rv div{border:1.5px solid var(--border);border-radius:2px}
+.ratio-btn.active .rv div{border-color:var(--accent)}
+.ratio-btn .rl{font-size:11px;color:var(--text3);font-weight:500}
+.ratio-btn.active .rl{color:var(--accent-text)}
+
+.ref-row{display:flex;gap:7px;margin-bottom:7px}
+.ref-row input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:monospace;outline:none;transition:border-color .2s}
+.ref-row input:focus{border-color:var(--accent)}
+.btn-sm{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.btn-sm:hover{border-color:var(--accent);color:var(--text)}
+.btn-sm.danger:hover{border-color:var(--red);color:var(--red)}
+.add-ref{font-size:13px;color:var(--accent-text);cursor:pointer;background:none;border:none;padding:0;margin-top:2px}
+.add-ref:hover{text-decoration:underline}
+
+.gen-btn{width:100%;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:all .3s;margin-top:6px}
+.gen-btn.ready{background:var(--accent);color:#fff}
+.gen-btn.ready:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.25)}
+.gen-btn.loading{background:var(--accent-light);color:var(--accent-text);cursor:not-allowed}
+.gen-btn:disabled{cursor:not-allowed;opacity:.5}
+
+.key-row{display:flex;gap:7px;align-items:center}
+.key-row input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:monospace;outline:none;transition:border-color .2s}
+.key-row input:focus{border-color:var(--accent)}
+.key-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;transition:background .3s}
+.key-dot.ok{background:var(--green)}
+
+.panel-right{flex:1;padding:28px;overflow-y:auto;height:calc(100vh - 60px)}
+.result-area{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px}
+.result-placeholder{text-align:center;color:var(--text3)}
+.result-placeholder .icon{font-size:48px;margin-bottom:14px}
+.result-placeholder p{font-size:14px;line-height:1.6}
+
+.generating{text-align:center}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.generating h3{font-size:15px;margin-bottom:6px;color:var(--accent-text)}
+.generating p{font-size:13px;color:var(--text2)}
+.dots{display:flex;gap:5px;justify-content:center;margin-top:14px}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:dot 1.4s ease-in-out infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+.task-info{width:100%;margin-bottom:18px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;gap:18px;flex-wrap:wrap}
+.task-info-item{font-size:13px;color:var(--text2)}
+.task-info-item strong{color:var(--text);font-weight:600}
+
+.result-images{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;width:100%}
+.result-images img{width:100%;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:transform .2s}
+.result-images img:hover{transform:scale(1.02)}
+
+.error-box{background:var(--red-light);border:1px solid var(--red);border-radius:10px;padding:18px;width:100%;text-align:center}
+.error-box h3{color:var(--red);font-size:14px;margin-bottom:6px}
+.error-box p{color:var(--text2);font-size:13px}
+
+.history-section{margin-top:28px;width:100%}
+.history-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.history-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:7px}
+.history-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.history-thumb:hover{border-color:var(--accent);transform:scale(1.03)}
+
+.lightbox{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.show{display:flex}
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
+
+@media(max-width:900px){
+  .main{flex-direction:column}
+  .panel-left{width:100%;min-width:0;height:auto;position:static;border-right:none;border-bottom:1px solid var(--border)}
+  .panel-right{height:auto}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="../../index.html">ModelHub</a>
+  <div class="nav-center">
+    <a href="../../index.html#models">模型</a>
+    <a href="../../api_docs/index.html">接口文档</a>
+    <a href="../../media/index.html">资产</a>
+  </div>
+  <div class="nav-right"></div>
+</nav>
+
+<div class="main">
+  <div class="panel-left">
+    <div class="panel-title">图像生成</div>
+    <div class="panel-model">GPT Image 2</div>
+    <div class="panel-desc">输入描述，选择参数，一键生成 AI 图像</div>
+
+    <div class="form-group">
+      <label class="form-label">API 密钥</label>
+      <div class="key-row">
+        <div class="key-dot" id="keyDot"></div>
+        <input type="password" id="apiKey" placeholder="输入密钥（与首页同步）">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">提示词 Prompt</label>
+      <textarea id="promptInput" placeholder="描述你想生成的图像，例如：&#10;一只穿着宇航服的柴犬在月球上散步，背景是地球，赛博朋克风格"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">输出比例</label>
+      <div class="ratio-grid" id="ratioGrid"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">参考图片（可选）</label>
+      <div id="refList"></div>
+      <button class="add-ref" onclick="addRef()">+ 添加参考图</button>
+    </div>
+
+    <button class="gen-btn ready" id="genBtn" onclick="generate()">生成图像</button>
+  </div>
+
+  <div class="panel-right">
+    <div class="result-area" id="resultArea">
+      <div class="result-placeholder">
+        <div class="icon">&#x1f3a8;</div>
+        <p>在左侧输入提示词并选择参数<br>点击「生成图像」开始创作</p>
+      </div>
+    </div>
+    <div class="history-section" id="historySection" style="display:none">
+      <div class="history-title">生成历史</div>
+      <div class="history-grid" id="historyGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')"><img id="lbImg" src=""></div>
+
+<script>
+const API='https://api.wuyinkeji.com/api/async';
+const RATIOS=[{v:'auto',l:'自动',w:24,h:24},{v:'1:1',l:'1:1',w:24,h:24},{v:'3:2',l:'3:2',w:28,h:19},{v:'2:3',l:'2:3',w:19,h:28},{v:'16:9',l:'16:9',w:32,h:18},{v:'9:16',l:'9:16',w:18,h:32},{v:'4:3',l:'4:3',w:28,h:21},{v:'3:4',l:'3:4',w:21,h:28},{v:'21:9',l:'21:9',w:34,h:15},{v:'9:21',l:'9:21',w:15,h:34},{v:'1:3',l:'1:3',w:14,h:30},{v:'3:1',l:'3:1',w:30,h:14},{v:'2:1',l:'2:1',w:30,h:15},{v:'1:2',l:'1:2',w:15,h:30}];
+let ratio='auto',busy=false,timer=null,history=JSON.parse(localStorage.getItem('modelhub_img_history')||'[]');
+
+function initRatios(){
+  document.getElementById('ratioGrid').innerHTML=RATIOS.map(r=>`<div class="ratio-btn${r.v===ratio?' active':''}" data-v="${r.v}" onclick="setRatio('${r.v}')"><div class="rv"><div style="width:${r.w}px;height:${r.h}px"></div></div><div class="rl">${r.l}</div></div>`).join('');
+}
+function setRatio(v){
+  ratio=v;
+  document.querySelectorAll('.ratio-btn').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+}
+
+let rc=0;
+function addRef(){
+  rc++;
+  const d=document.createElement('div');
+  d.className='ref-row';d.id='r'+rc;
+  d.innerHTML=`<input placeholder="参考图片 URL"><button class="btn-sm danger" onclick="this.parentElement.remove()">&times;</button>`;
+  document.getElementById('refList').appendChild(d);
+}
+function getRefs(){return Array.from(document.querySelectorAll('#refList .ref-row input')).map(i=>i.value.trim()).filter(Boolean)}
+
+const akIn=document.getElementById('apiKey'),kDot=document.getElementById('keyDot');
+function loadKey(){const k=localStorage.getItem('modelhub_api_key')||'';akIn.value=k;kDot.classList.toggle('ok',!!k);}
+akIn.addEventListener('input',()=>{localStorage.setItem('modelhub_api_key',akIn.value.trim());kDot.classList.toggle('ok',!!akIn.value.trim());});
+akIn.addEventListener('dblclick',()=>{akIn.type=akIn.type==='password'?'text':'password';});
+loadKey();
+
+async function generate(){
+  if(busy)return;
+  const key=akIn.value.trim(),prompt=document.getElementById('promptInput').value.trim();
+  if(!key)return showErr('请先输入 API 密钥');
+  if(!prompt)return showErr('请输入提示词');
+  const body={prompt,size:ratio},urls=getRefs();
+  if(urls.length)body.urls=urls;
+  setBusy(true);showLoading();
+  try{
+    const r=await fetch(`${API}/image_gpt?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':key},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.code!==200){showErr(d.msg||'请求失败');setBusy(false);return;}
+    showTask(d.data.id,d.exec_time);poll(d.data.id,key);
+  }catch(e){showErr('网络错误：'+e.message);setBusy(false);}
+}
+function poll(id,key){
+  if(timer)clearInterval(timer);let n=0;
+  timer=setInterval(async()=>{
+    if(++n>120){clearInterval(timer);showErr('查询超时');setBusy(false);return;}
+    try{const r=await fetch(`${API}/detail?id=${encodeURIComponent(id)}`,{headers:{'Authorization':key,'Content-Type':'application/json'}});
+    const d=await r.json();if(d.code!==200)return;
+    if(d.data.status===2){clearInterval(timer);setBusy(false);showResult(d.data);}
+    else if(d.data.status===3){clearInterval(timer);setBusy(false);showErr(d.data.message||'生成失败');}
+    }catch(e){}
+  },3000);
+}
+function setBusy(v){busy=v;const b=document.getElementById('genBtn');b.disabled=v;b.className='gen-btn '+(v?'loading':'ready');b.textContent=v?'生成中...':'生成图像';}
+function showLoading(){document.getElementById('resultArea').innerHTML='<div class="generating"><div class="spinner"></div><h3>正在生成图像</h3><p>AI 正在创作中，请稍候...</p><div class="dots"><span></span><span></span><span></span></div></div>';}
+function showTask(id,t){const a=document.getElementById('resultArea'),d=document.createElement('div');d.className='task-info';d.innerHTML=`<div class="task-info-item">任务 ID: <strong>${id}</strong></div><div class="task-info-item">耗时: <strong>${t?t.toFixed(2)+'s':'-'}</strong></div><div class="task-info-item">状态: <strong style="color:var(--amber)">排队中</strong></div>`;a.insertBefore(d,a.firstChild);}
+function showResult(detail){
+  const a=document.getElementById('resultArea');let imgs=[];
+  if(detail.result){if(typeof detail.result==='string')imgs=[detail.result];else if(Array.isArray(detail.result))imgs=detail.result;else if(detail.result.images)imgs=detail.result.images;else if(detail.result.url)imgs=[detail.result.url];}
+  else if(detail.urls)imgs=detail.urls;else if(detail.image)imgs=[detail.image];
+  if(!imgs.length){for(const k of['url','image','img','src','output']){if(detail[k]){imgs=typeof detail[k]==='string'?[detail[k]]:Array.isArray(detail[k])?detail[k]:[];break;}}}
+  if(!imgs.length){a.innerHTML=`<div class="task-info" style="width:100%"><div class="task-info-item">状态: <strong style="color:var(--green)">已完成</strong></div></div><div style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px"><p style="color:var(--text3);font-size:13px;margin-bottom:10px">返回数据：</p><pre style="background:var(--bg3);border-radius:8px;padding:14px;font-size:13px;color:var(--accent-text);overflow-x:auto;white-space:pre-wrap">${JSON.stringify(detail,null,2)}</pre></div>`;return;}
+  // 保存到资产
+  const prompt=document.getElementById('promptInput').value.trim();
+  imgs.forEach(u=>{
+    const assets=JSON.parse(localStorage.getItem('modelhub_assets')||'[]');
+    assets.unshift({id:Date.now(),type:'image',url:u,prompt:prompt,model:'GPT Image 2',time:Date.now()});
+    if(assets.length>200)assets.length=200;
+    localStorage.setItem('modelhub_assets',JSON.stringify(assets));
+  });
+  imgs.forEach(u=>{if(!history.includes(u)){history.unshift(u);if(history.length>20)history.pop();}});
+  localStorage.setItem('modelhub_img_history',JSON.stringify(history));renderHist();
+  a.innerHTML=`<div class="task-info" style="width:100%"><div class="task-info-item">状态: <strong style="color:var(--green)">生成成功</strong></div><div class="task-info-item">图片: <strong>${imgs.length}</strong></div></div><div class="result-images">${imgs.map(u=>`<img src="${u}" onclick="openLB('${u}')" loading="lazy">`).join('')}</div>`;
+}
+function showErr(m){document.getElementById('resultArea').innerHTML=`<div class="error-box"><h3>生成失败</h3><p>${m}</p></div>`;}
+function openLB(u){document.getElementById('lbImg').src=u;document.getElementById('lightbox').classList.add('show');}
+function renderHist(){const s=document.getElementById('historySection'),g=document.getElementById('historyGrid');if(!history.length){s.style.display='none';return;}s.style.display='block';g.innerHTML=history.map(u=>`<img class="history-thumb" src="${u}" onclick="openLB('${u}')" loading="lazy">`).join('');}
+renderHist();initRatios();
+</script>
+</body>
+</html>

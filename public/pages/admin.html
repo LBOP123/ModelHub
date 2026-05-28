@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 84px 48px 80px;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+  animation: fadeUp .4s ease-out;
+}
+.page-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(232,154,60,.25);
+}
+.page-icon svg { width: 22px; height: 22px; color: #fff; }
+.page-title { font-size: 26px; font-weight: 800; margin-bottom: 2px; }
+.page-desc { font-size: 13px; color: var(--text-tertiary); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  transition: var(--transition);
+  animation: fadeUp .4s ease-out both;
+}
+.stat-card:hover { border-color: var(--blue); box-shadow: var(--shadow); }
+.stat-card:nth-child(2) { animation-delay: .05s; }
+.stat-card:nth-child(3) { animation-delay: .1s; }
+.stat-card:nth-child(4) { animation-delay: .15s; }
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.stat-icon svg { width: 20px; height: 20px; }
+.stat-icon.blue { background: var(--blue-light); color: var(--blue); }
+.stat-icon.green { background: var(--green-light); color: var(--green); }
+.stat-icon.orange { background: var(--orange-light); color: var(--orange); }
+.stat-icon.purple { background: var(--purple-light); color: var(--purple); }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; }
+.stat-label { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+
+.nav-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.nav-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+  animation: fadeUp .4s ease-out .2s both;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.nav-card:hover { border-color: var(--blue); box-shadow: var(--shadow); transform: translateY(-2px); }
+.nav-card-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-card-icon svg { width: 24px; height: 24px; }
+.nav-card-icon.blue { background: var(--blue-light); color: var(--blue); }
+.nav-card-icon.green { background: var(--green-light); color: var(--green); }
+.nav-card-icon.orange { background: var(--orange-light); color: var(--orange); }
+.nav-card-title { font-size: 18px; font-weight: 700; }
+.nav-card-desc { font-size: 13px; color: var(--text-tertiary); line-height: 1.6; }
+.nav-card-count {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--blue-light);
+  color: var(--blue);
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 76px 16px 60px; }
+  .page-title { font-size: 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 16px; }
+  .stat-value { font-size: 22px; }
+  .nav-cards { grid-template-columns: 1fr; gap: 12px; }
+  .nav-card { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div>
+      <h1 class="page-title">管理后台</h1>
+      <p class="page-desc">系统管理与数据概览</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="stat-value" id="statUsers">-</div>
+      <div class="stat-label">注册用户</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      </div>
+      <div class="stat-value" id="statModels">-</div>
+      <div class="stat-label">模型总数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="stat-value" id="statFeedbacks">-</div>
+      <div class="stat-label">反馈总数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="stat-value" id="statPending">-</div>
+      <div class="stat-label">待处理反馈</div>
+    </div>
+  </div>
+
+  <div class="nav-cards">
+    <a href="/pages/admin-users.html" class="nav-card">
+      <div class="nav-card-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="nav-card-title">用户管理</div>
+      <div class="nav-card-desc">查看所有注册用户信息，查询每个用户的模型调用情况和统计数据</div>
+      <span class="nav-card-count" id="navUsers">-</span>
+    </a>
+    <a href="/pages/admin-models.html" class="nav-card">
+      <div class="nav-card-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      </div>
+      <div class="nav-card-title">模型管理</div>
+      <div class="nav-card-desc">管理平台模型配置，包括新增、编辑、删除模型和上下架操作</div>
+      <span class="nav-card-count" id="navModels">-</span>
+    </a>
+    <a href="/pages/admin-feedbacks.html" class="nav-card">
+      <div class="nav-card-icon orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="nav-card-title">反馈管理</div>
+      <div class="nav-card-desc">查看用户反馈意见，接受或拒绝建议，回复用户反馈</div>
+      <span class="nav-card-count" id="navPending">-</span>
+    </a>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('admin');
+if (!checkAuth()) throw new Error('redirect');
+if (!getAuthState().isAdmin) { window.location.href = '/'; throw new Error('redirect'); }
+
+async function loadAdmin() {
+  try {
+    const [usersRes, modelsRes, fbRes, pendingRes] = await Promise.all([
+      api.get('/admin/users?page=1&limit=1'),
+      api.get('/admin/models'),
+      api.get('/admin/feedbacks?page=1&limit=1'),
+      api.get('/admin/feedbacks?status=pending&page=1&limit=1')
+    ]);
+    const userTotal = usersRes.data?.total || 0;
+    const modelTotal = modelsRes.data?.length || 0;
+    const fbTotal = fbRes.data?.total || 0;
+    const pendingTotal = pendingRes.data?.total || 0;
+
+    document.getElementById('statUsers').textContent = userTotal;
+    document.getElementById('statModels').textContent = modelTotal;
+    document.getElementById('statFeedbacks').textContent = fbTotal;
+    document.getElementById('statPending').textContent = pendingTotal;
+
+    document.getElementById('navUsers').textContent = userTotal + ' 位用户';
+    document.getElementById('navModels').textContent = modelTotal + ' 个模型';
+    document.getElementById('navPending').textContent = pendingTotal + ' 条待处理';
+  } catch (e) {
+    showToast('加载数据失败: ' + e.message, 'error');
+  }
+}
+
+loadAdmin();
+</script>
+</body>
+</html>

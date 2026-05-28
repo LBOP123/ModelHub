@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用户管理 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 84px 48px 80px;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  animation: fadeUp .4s ease-out;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: var(--transition);
+}
+.back-btn:hover { color: var(--blue); }
+.back-btn svg { width: 16px; height: 16px; }
+.page-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(79,110,247,.25);
+}
+.page-icon svg { width: 22px; height: 22px; color: #fff; }
+.page-title { font-size: 26px; font-weight: 800; margin-bottom: 2px; }
+.page-desc { font-size: 13px; color: var(--text-tertiary); }
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  animation: fadeUp .4s ease-out .1s both;
+}
+.search-input {
+  flex: 1;
+  max-width: 400px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+.search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(79,110,247,.1); }
+.search-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--blue);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.search-btn:hover { opacity: .85; }
+
+/* Table */
+.table-wrap {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: fadeUp .4s ease-out .15s both;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid #f5f5f5;
+}
+th {
+  background: var(--bg);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  letter-spacing: .5px;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(79,110,247,.02); }
+.username-cell { font-weight: 600; color: var(--text-primary); }
+.email-cell { color: var(--text-secondary); font-size: 13px; }
+.stat-num { font-weight: 700; color: var(--blue); }
+.stat-success { color: var(--green); }
+.time-cell { font-size: 12px; color: var(--text-tertiary); }
+
+.action-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-secondary);
+}
+.action-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.page-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.page-btn:hover { border-color: var(--blue); }
+.page-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+.page-info { font-size: 13px; color: var(--text-tertiary); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  padding: 32px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.15);
+  animation: fadeUp .3s ease-out;
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.modal-close {
+  float: right;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-tertiary);
+}
+
+/* User detail in modal */
+.detail-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--blue);
+}
+.detail-name { font-size: 18px; font-weight: 700; }
+.detail-email { font-size: 13px; color: var(--text-tertiary); }
+
+.model-stats-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 16px 0 10px;
+}
+.model-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+.model-stat-row:last-child { border-bottom: none; }
+.model-stat-name { font-size: 14px; font-weight: 600; }
+.model-stat-cat { font-size: 11px; color: var(--text-tertiary); }
+.model-stat-nums { display: flex; gap: 16px; }
+.model-stat-nums span { font-size: 13px; }
+.model-stat-nums .count { font-weight: 700; color: var(--blue); }
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 76px 16px 60px; }
+  .page-title { font-size: 20px; }
+  .table-wrap { overflow-x: auto; }
+  table { font-size: 12px; min-width: 600px; }
+  th, td { padding: 8px 10px; }
+  .search-bar { flex-direction: column; }
+  .search-input { max-width: 100%; }
+  .modal { padding: 20px; max-width: 95%; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+  <a href="/pages/admin.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+    返回管理后台
+  </a>
+
+  <div class="page-header">
+    <div class="page-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div>
+      <h1 class="page-title">用户管理</h1>
+      <p class="page-desc">查看所有注册用户及其模型调用情况</p>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" class="search-input" id="searchInput" placeholder="搜索用户名或邮箱..." onkeydown="if(event.key==='Enter')loadUsers()">
+    <button class="search-btn" onclick="loadUsers()">搜索</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>用户名</th>
+          <th>邮箱</th>
+          <th>注册时间</th>
+          <th>总调用</th>
+          <th>成功</th>
+          <th>最后调用</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDetail()">&times;</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('admin');
+if (!checkAuth()) throw new Error('redirect');
+if (!getAuthState().isAdmin) { window.location.href = '/'; throw new Error('redirect'); }
+
+const CAT_NAMES = { image: '图像', video: '视频', audio: '音频', text: '文本' };
+let currentPage = 1;
+
+async function loadUsers(page) {
+  if (page) currentPage = page;
+  const search = document.getElementById('searchInput').value.trim();
+  const tbody = document.getElementById('userTable');
+
+  try {
+    const params = new URLSearchParams({ page: currentPage, limit: 20 });
+    if (search) params.set('search', search);
+    const res = await api.get('/admin/users?' + params);
+    const { list, total, page: p, limit } = res.data;
+
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">暂无用户数据</div></td></tr>';
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    tbody.innerHTML = list.map(u => `
+      <tr>
+        <td class="username-cell">${escHtml(u.username)}</td>
+        <td class="email-cell">${escHtml(u.email)}</td>
+        <td class="time-cell">${formatTime(u.created_at)}</td>
+        <td class="stat-num">${u.total_calls || 0}</td>
+        <td class="stat-success">${u.success_calls || 0}</td>
+        <td class="time-cell">${u.last_call_at ? formatTime(u.last_call_at) : '-'}</td>
+        <td><button class="action-btn" onclick="showDetail(${u.id})">查看详情</button></td>
+      </tr>
+    `).join('');
+
+    renderPagination(total, p, limit);
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">加载失败: ' + e.message + '</div></td></tr>';
+  }
+}
+
+function renderPagination(total, page, limit) {
+  const pages = Math.ceil(total / limit);
+  const el = document.getElementById('pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="loadUsers(${page - 1})" ${page <= 1 ? 'disabled' : ''}>上一页</button>`;
+  for (let i = 1; i <= pages; i++) {
+    html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadUsers(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="loadUsers(${page + 1})" ${page >= pages ? 'disabled' : ''}>下一页</button>`;
+  html += `<span class="page-info">共 ${total} 条</span>`;
+  el.innerHTML = html;
+}
+
+async function showDetail(userId) {
+  const modal = document.getElementById('detailModal');
+  const content = document.getElementById('detailContent');
+  modal.classList.add('active');
+
+  try {
+    const res = await api.get('/admin/users/' + userId);
+    const { user, model_stats } = res.data;
+    const initial = user.username.charAt(0).toUpperCase();
+
+    content.innerHTML = `
+      <div class="detail-user">
+        <div class="detail-avatar">${initial}</div>
+        <div>
+          <div class="detail-name">${escHtml(user.display_name || user.username)}</div>
+          <div class="detail-email">${escHtml(user.email)} · 注册于 ${formatTime(user.created_at)}</div>
+        </div>
+      </div>
+      <div class="model-stats-title">模型调用统计</div>
+      ${model_stats.length ? model_stats.map(s => `
+        <div class="model-stat-row">
+          <div>
+            <div class="model-stat-name">${escHtml(s.model_name)}</div>
+            <div class="model-stat-cat">${CAT_NAMES[s.category] || s.category}</div>
+          </div>
+          <div class="model-stat-nums">
+            <span>调用 <span class="count">${s.call_count}</span></span>
+            <span>成功 <span class="count" style="color:var(--green)">${s.success_count}</span></span>
+          </div>
+        </div>
+      `).join('') : '<div class="empty-state">暂无调用记录</div>'}
+    `;
+  } catch (e) {
+    content.innerHTML = '<div class="empty-state">加载失败: ' + e.message + '</div>';
+  }
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('active');
+}
+
+document.getElementById('detailModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDetail();
+});
+
+loadUsers(1);
+</script>
+</body>
+</html>

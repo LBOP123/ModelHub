@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资产 - ModelHub</title>
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f8f9fb;--bg3:#f1f3f5;
+  --text:#1a1a2e;--text2:#555;--text3:#888;
+  --border:#e5e7eb;
+  --accent:#6366f1;--accent-light:#eef2ff;--accent-text:#4f46e5;
+  --card-bg:#fff;--card-hover:#fafbff;
+  --green:#059669;--green-light:#ecfdf5;
+  --amber:#d97706;--amber-light:#fffbeb;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --purple:#7c3aed;--purple-light:#f5f3ff;
+  --red:#dc2626;--red-light:#fef2f2;
+  --shadow:0 1px 3px rgba(0,0,0,.06);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0f0f14;--bg2:#16161d;--bg3:#1e1e28;
+    --text:#e8e8ed;--text2:#a0a0b0;--text3:#666;
+    --border:#2a2a35;
+    --accent:#818cf8;--accent-light:rgba(99,102,241,.1);--accent-text:#a5b4fc;
+    --card-bg:#16161d;--card-hover:#1c1c26;
+    --green:#34d399;--green-light:rgba(52,211,153,.08);
+    --amber:#fbbf24;--amber-light:rgba(251,191,36,.08);
+    --blue:#60a5fa;--blue-light:rgba(96,165,250,.08);
+    --purple:#a78bfa;--purple-light:rgba(167,139,250,.08);
+    --red:#f87171;--red-light:rgba(248,113,113,.08);
+    --shadow:0 1px 3px rgba(0,0,0,.3);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(16px);background:rgba(255,255,255,.85);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center}
+@media(prefers-color-scheme:dark){nav{background:rgba(15,15,20,.85)}}
+.nav-brand{font-size:20px;font-weight:700;color:var(--accent);text-decoration:none;position:absolute;left:40px}
+.nav-center{flex:1;display:flex;justify-content:center;gap:32px}
+.nav-center a{color:var(--text2);text-decoration:none;font-size:14px;transition:color .2s;position:relative;padding:4px 0}
+.nav-center a:hover{color:var(--text)}
+.nav-center a.active{color:var(--accent-text);font-weight:600}
+.nav-center a.active::after{content:'';position:absolute;bottom:-18px;left:0;right:0;height:2px;background:var(--accent);border-radius:1px}
+.nav-right{position:absolute;right:40px}
+
+.container{max-width:1200px;margin:0 auto;padding:90px 24px 40px}
+
+.page-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+.page-title{font-size:28px;font-weight:700}
+.page-desc{font-size:14px;color:var(--text2);margin-top:4px}
+
+.tabs{display:flex;gap:4px;background:var(--bg2);border-radius:10px;padding:4px;border:1px solid var(--border)}
+.tab{padding:8px 20px;border-radius:8px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;transition:all .2s;font-family:inherit}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--card-bg);color:var(--accent-text);box-shadow:var(--shadow)}
+
+.stats{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px 20px;min-width:120px}
+.stat-value{font-size:24px;font-weight:700;color:var(--accent-text)}
+.stat-label{font-size:12px;color:var(--text3);margin-top:2px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+
+.asset-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s;cursor:pointer;position:relative}
+.asset-card:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-2px)}
+.asset-card.hidden{display:none}
+
+.asset-thumb{width:100%;aspect-ratio:1;object-fit:cover;background:var(--bg2);display:block}
+.asset-thumb.video{aspect-ratio:16/9}
+.asset-thumb.audio{aspect-ratio:2/1;background:var(--purple-light)}
+
+.asset-info{padding:12px 14px}
+.asset-type{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:99px;margin-bottom:8px}
+.asset-type.image{background:var(--green-light);color:var(--green)}
+.asset-type.video{background:var(--amber-light);color:var(--amber)}
+.asset-type.audio{background:var(--purple-light);color:var(--purple)}
+.asset-prompt{font-size:12px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.asset-time{font-size:11px;color:var(--text3);margin-top:8px}
+.asset-actions{display:flex;gap:6px;margin-top:8px}
+.asset-btn{flex:1;padding:6px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text2);font-size:11px;cursor:pointer;transition:all .15s;text-align:center;font-family:inherit}
+.asset-btn:hover{border-color:var(--accent);color:var(--accent-text)}
+.asset-btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+.empty{text-align:center;padding:80px 20px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:16px}
+.empty h3{font-size:16px;margin-bottom:8px;color:var(--text2)}
+.empty p{font-size:13px;line-height:1.6}
+.empty-btn{margin-top:20px;padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;transition:opacity .2s;font-family:inherit;text-decoration:none;display:inline-block}
+.empty-btn:hover{opacity:.9}
+
+.lightbox{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.show{display:flex}
+.lightbox img,.lightbox video{max-width:90vw;max-height:90vh;border-radius:8px}
+
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.success{background:var(--green-light);color:var(--green);border:1px solid var(--green)}
+.toast.error{background:var(--red-light);color:var(--red);border:1px solid var(--red)}
+@media(prefers-color-scheme:dark){
+  .toast.success{background:rgba(52,211,153,.12);color:#34d399;border-color:rgba(52,211,153,.2)}
+  .toast.error{background:rgba(248,113,113,.12);color:#f87171;border-color:rgba(248,113,113,.2)}
+}
+
+@media(max-width:600px){
+  .page-header{flex-direction:column;align-items:stretch}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+  .stats{gap:10px}
+  .stat-card{flex:1;min-width:0}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="../index.html">ModelHub</a>
+  <div class="nav-center">
+    <a href="../index.html#models">模型</a>
+    <a href="../api_docs/index.html">接口文档</a>
+    <a href="index.html" class="active">资产</a>
+  </div>
+  <div class="nav-right"></div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">我的资产</h1>
+      <p class="page-desc">查看和管理你生成的所有图片、视频和音频</p>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-type="all" onclick="filterAssets('all')">全部</button>
+      <button class="tab" data-type="image" onclick="filterAssets('image')">图片</button>
+      <button class="tab" data-type="video" onclick="filterAssets('video')">视频</button>
+      <button class="tab" data-type="audio" onclick="filterAssets('audio')">音频</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="empty" id="empty" style="display:none">
+    <div class="empty-icon">&#x1f3a8;</div>
+    <h3>暂无资产</h3>
+    <p>你还没有生成过内容<br>去模型页面开始创作吧</p>
+    <a class="empty-btn" href="../index.html#models">浏览模型</a>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lbImg" src="" style="display:none">
+  <video id="lbVideo" controls style="display:none"></video>
+  <audio id="lbAudio" controls style="display:none"></audio>
+</div>
+
+<script>
+let assets = JSON.parse(localStorage.getItem('modelhub_assets') || '[]');
+
+// 同步旧版历史数据
+const oldHistory = JSON.parse(localStorage.getItem('modelhub_img_history') || '[]');
+if (oldHistory.length && !assets.length) {
+  assets = oldHistory.map(url => ({
+    id: Date.now() + Math.random(),
+    type: 'image',
+    url: url,
+    prompt: '',
+    model: 'GPT Image 2',
+    time: Date.now()
+  }));
+  localStorage.setItem('modelhub_assets', JSON.stringify(assets));
+}
+
+let currentFilter = 'all';
+
+function renderStats() {
+  const images = assets.filter(a => a.type === 'image').length;
+  const videos = assets.filter(a => a.type === 'video').length;
+  const audios = assets.filter(a => a.type === 'audio').length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value">${assets.length}</div>
+      <div class="stat-label">总资产</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${images}</div>
+      <div class="stat-label">图片</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${videos}</div>
+      <div class="stat-label">视频</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${audios}</div>
+      <div class="stat-label">音频</div>
+    </div>
+  `;
+}
+
+function renderAssets() {
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+
+  const filtered = currentFilter === 'all'
+    ? assets
+    : assets.filter(a => a.type === currentFilter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.innerHTML = filtered.map(a => `
+    <div class="asset-card" data-type="${a.type}">
+      ${getThumbHtml(a)}
+      <div class="asset-info">
+        <span class="asset-type ${a.type}">${getTypeIcon(a.type)} ${getTypeName(a.type)}</span>
+        ${a.prompt ? `<div class="asset-prompt">${escapeHtml(a.prompt)}</div>` : ''}
+        <div class="asset-time">${formatTime(a.time)}</div>
+        <div class="asset-actions">
+          <button class="asset-btn" onclick="event.stopPropagation();downloadAsset('${a.url}','${a.type}')">下载</button>
+          <button class="asset-btn" onclick="event.stopPropagation();copyUrl('${a.url}')">复制链接</button>
+          <button class="asset-btn danger" onclick="event.stopPropagation();deleteAsset('${a.id}')">删除</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function getThumbHtml(a) {
+  if (a.type === 'image') {
+    return `<img class="asset-thumb" src="${a.url}" loading="lazy" onclick="openLightbox('${a.url}','image')">`;
+  } else if (a.type === 'video') {
+    return `<video class="asset-thumb video" src="${a.url}" muted preload="metadata" onclick="openLightbox('${a.url}','video')"></video>`;
+  } else {
+    return `<div class="asset-thumb audio" onclick="openLightbox('${a.url}','audio')">&#x1f3b5;</div>`;
+  }
+}
+
+function getTypeIcon(type) {
+  const icons = { image: '&#x1f5bc;', video: '&#x1f3ac;', audio: '&#x1f3b5;' };
+  return icons[type] || '';
+}
+
+function getTypeName(type) {
+  const names = { image: '图片', video: '视频', audio: '音频' };
+  return names[type] || type;
+}
+
+function filterAssets(type) {
+  currentFilter = type;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.type === type);
+  });
+  renderAssets();
+}
+
+function openLightbox(url, type) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lbImg');
+  const video = document.getElementById('lbVideo');
+  const audio = document.getElementById('lbAudio');
+
+  img.style.display = 'none';
+  video.style.display = 'none';
+  audio.style.display = 'none';
+  video.pause();
+  audio.pause();
+
+  if (type === 'image') {
+    img.src = url;
+    img.style.display = 'block';
+  } else if (type === 'video') {
+    video.src = url;
+    video.style.display = 'block';
+  } else {
+    audio.src = url;
+    audio.style.display = 'block';
+  }
+  lb.classList.add('show');
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  lb.classList.remove('show');
+  document.getElementById('lbVideo').pause();
+  document.getElementById('lbAudio').pause();
+}
+
+function downloadAsset(url, type) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `modelhub_${type}_${Date.now()}.${type === 'image' ? 'png' : type === 'video' ? 'mp4' : 'mp3'}`;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function copyUrl(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('链接已复制', 'success');
+  });
+}
+
+function deleteAsset(id) {
+  if (!confirm('确定要删除这个资产吗？')) return;
+  assets = assets.filter(a => String(a.id) !== String(id));
+  localStorage.setItem('modelhub_assets', JSON.stringify(assets));
+  renderStats();
+  renderAssets();
+  showToast('已删除', 'success');
+}
+
+window.addAsset = function(type, url, prompt, model) {
+  assets.unshift({
+    id: Date.now(),
+    type: type,
+    url: url,
+    prompt: prompt || '',
+    model: model || '',
+    time: Date.now()
+  });
+  if (assets.length > 200) assets = assets.slice(0, 200);
+  localStorage.setItem('modelhub_assets', JSON.stringify(assets));
+};
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前';
+  if (diff < 604800000) return Math.floor(diff / 86400000) + ' 天前';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function showToast(msg, type) {
+  let t = document.querySelector('.toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = `toast ${type || ''} show`;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+renderStats();
+renderAssets();
+</script>
+</body>
+</html>

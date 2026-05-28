@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图像生成 - 接口文档 - ModelHub</title>
+<style>
+:root{
+  --bg:#fff;--bg2:#f8f9fb;--bg3:#f1f3f5;
+  --text:#1a1a2e;--text2:#555;--text3:#888;
+  --border:#e5e7eb;
+  --accent:#6366f1;--accent-light:#eef2ff;--accent-text:#4f46e5;
+  --green:#059669;--green-light:#ecfdf5;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --code-bg:#f4f4f8;--shadow:0 1px 3px rgba(0,0,0,.06);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0f0f14;--bg2:#16161d;--bg3:#1e1e28;
+    --text:#e8e8ed;--text2:#a0a0b0;--text3:#666;
+    --border:#2a2a35;
+    --accent:#818cf8;--accent-light:rgba(99,102,241,.1);--accent-text:#a5b4fc;
+    --green:#34d399;--green-light:rgba(52,211,153,.08);
+    --blue:#60a5fa;--blue-light:rgba(96,165,250,.08);
+    --code-bg:#1a1a24;--shadow:0 1px 3px rgba(0,0,0,.3);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Nav */
+.topnav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(16px);background:rgba(255,255,255,.85);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center}
+@media(prefers-color-scheme:dark){.topnav{background:rgba(15,15,20,.85)}}
+.topnav-brand{font-size:18px;font-weight:700;color:var(--accent);text-decoration:none;position:absolute;left:24px}
+.topnav-center{flex:1;display:flex;justify-content:center;gap:28px}
+.topnav-center a{color:var(--text2);text-decoration:none;font-size:13px;white-space:nowrap;transition:color .2s}
+.topnav-center a:hover,.topnav-center a.active{color:var(--accent-text)}
+.topnav-right{position:absolute;right:24px}
+.topnav-right .key-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;transition:background .3s}
+.topnav-right .key-dot.ok{background:var(--green)}
+
+/* Layout */
+.layout{display:flex;padding-top:56px;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:240px;min-width:240px;border-right:1px solid var(--border);background:var(--bg2);padding:20px 0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+.sb-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;padding:0 20px;margin-bottom:12px}
+.sb-list{list-style:none}
+.sb-item{display:block}
+.sb-link{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--text2);text-decoration:none;transition:all .15s;border-left:3px solid transparent}
+.sb-link:hover{color:var(--text);background:var(--bg)}
+.sb-link.active{color:var(--accent-text);background:var(--accent-light);border-left-color:var(--accent);font-weight:600}
+.sb-link .dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sb-link .dot.wip{background:var(--text3)}
+.sb-divider{height:1px;background:var(--border);margin:14px 20px}
+
+/* Main content */
+.doc-main{flex:1;padding:32px 40px 80px;max-width:800px;min-width:0}
+
+.doc-header{margin-bottom:32px}
+.doc-title{font-size:26px;font-weight:700;margin-bottom:6px}
+.doc-subtitle{font-size:14px;color:var(--text2)}
+.doc-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--green-light);color:var(--green);margin-left:8px;font-weight:600;vertical-align:middle}
+
+/* Doc content */
+.doc-section{margin-bottom:36px}
+.doc-section h3{font-size:16px;font-weight:700;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);color:var(--text)}
+
+.endpoint{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.method-tag{display:inline-block;padding:3px 10px;border-radius:5px;font-size:12px;font-weight:700}
+.method-tag.post{background:var(--green-light);color:var(--green)}
+.method-tag.get{background:var(--blue-light);color:var(--blue)}
+.endpoint-url{font-family:'Fira Code','Cascadia Code',monospace;font-size:13px;color:var(--text2);word-break:break-all}
+
+.param-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px}
+.param-table th{text-align:left;padding:10px 14px;color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid var(--border);background:var(--bg2)}
+.param-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.param-table .pname{color:var(--accent-text);font-family:monospace;font-size:12px;font-weight:600}
+.param-table .prequired{color:var(--green);font-size:11px;font-weight:600}
+.param-table .poptional{color:var(--text3);font-size:11px}
+
+.code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:'Fira Code','Cascadia Code',monospace;font-size:13px;line-height:1.7;overflow-x:auto;color:var(--text);margin:12px 0;white-space:pre;position:relative}
+.code-block .code-label{position:absolute;top:8px;right:12px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:-apple-system,sans-serif}
+
+.note{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 16px;font-size:13px;color:var(--text2);margin:16px 0;line-height:1.6}
+.note strong{color:var(--accent-text)}
+
+.status-table{display:inline-flex;gap:12px;flex-wrap:wrap;margin:8px 0}
+.status-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)}
+.status-dot{width:8px;height:8px;border-radius:50%}
+.status-dot.s0{background:var(--text3)}
+.status-dot.s1{background:var(--accent)}
+.status-dot.s2{background:var(--green)}
+.status-dot.s3{background:#dc2626}
+
+/* Copy btn */
+.copy-btn{position:absolute;top:8px;right:8px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text3);cursor:pointer;transition:all .15s}
+.copy-btn:hover{color:var(--text);border-color:var(--accent)}
+
+/* Responsive */
+@media(max-width:800px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;min-width:0;height:auto;position:static;border-right:none;border-bottom:1px solid var(--border);padding:12px 0}
+  .sb-list{display:flex;overflow-x:auto;padding:0 12px;gap:4px}
+  .sb-link{padding:8px 14px;border-left:none;border-radius:8px;white-space:nowrap;font-size:12px}
+  .sb-link.active{border-left:none}
+  .sb-divider{display:none}
+  .doc-main{padding:24px 16px 60px}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="topnav-brand" href="../index.html">ModelHub</a>
+  <div class="topnav-center">
+    <a href="../index.html#models">模型</a>
+    <a href="index.html" class="active">接口文档</a>
+    <a href="../media/index.html">资产</a>
+  </div>
+  <div class="topnav-right">
+    <div class="key-dot" id="navKeyDot"></div>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-title">图像生成模型</div>
+    <ul class="sb-list" id="sbList">
+      <li class="sb-item"><a class="sb-link active" href="#gpt_image2" data-model="gpt_image2"><span class="dot"></span>GPT Image 2</a></li>
+      <!-- 新模型在此添加 -->
+    </ul>
+    <div class="sb-divider"></div>
+    <div class="sb-title" style="margin-top:4px">其他分类</div>
+    <ul class="sb-list">
+      <li class="sb-item"><a class="sb-link" href="text.html" style="color:var(--text3)"><span class="dot wip"></span>文本生成文档</a></li>
+      <li class="sb-item"><a class="sb-link" href="video.html" style="color:var(--text3)"><span class="dot wip"></span>视频生成文档</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main doc content -->
+  <main class="doc-main" id="docMain">
+
+    <!-- GPT Image 2 -->
+    <div class="doc-page" id="page-gpt_image2">
+      <div class="doc-header">
+        <h1 class="doc-title">GPT Image 2 <span class="doc-badge">可用</span></h1>
+        <p class="doc-subtitle">基于 GPT 的图像生成模型，支持多比例输出与参考图输入</p>
+      </div>
+
+      <div class="doc-section">
+        <h3>生成图像</h3>
+        <div class="endpoint">
+          <span class="method-tag post">POST</span>
+          <span class="endpoint-url">https://api.wuyinkeji.com/api/async/image_gpt</span>
+        </div>
+
+        <p style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px">请求 Header</p>
+        <table class="param-table">
+          <thead><tr><th>名称</th><th>值</th></tr></thead>
+          <tbody>
+            <tr><td class="pname">Authorization</td><td>接口密钥</td></tr>
+            <tr><td class="pname">Content-Type</td><td>application/json</td></tr>
+          </tbody>
+        </table>
+
+        <p style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px">请求参数</p>
+        <table class="param-table">
+          <thead><tr><th>参数</th><th>必填</th><th>类型</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="pname">prompt</td>
+              <td><span class="prequired">必填</span></td>
+              <td>string</td>
+              <td>图像描述提示词</td>
+            </tr>
+            <tr>
+              <td class="pname">size</td>
+              <td><span class="poptional">可选</span></td>
+              <td>string</td>
+              <td>输出图像比例，默认 <code>auto</code><br>可选值：auto / 1:1 / 3:2 / 2:3 / 16:9 / 9:16 / 4:3 / 3:4 / 21:9 / 9:21 / 1:3 / 3:1 / 2:1 / 1:2</td>
+            </tr>
+            <tr>
+              <td class="pname">urls</td>
+              <td><span class="poptional">可选</span></td>
+              <td>array</td>
+              <td>参考图片 URL 数组，支持多张<br>示例：<code>["https://example.com/a.jpg"]</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px">请求示例</p>
+        <div class="code-block" style="position:relative">
+          <button class="copy-btn" onclick="copyCode(this)">复制</button>
+<span style="color:var(--text3)">// POST https://api.wuyinkeji.com/api/async/image_gpt?key=你的密钥
+
+</span>{
+  <span style="color:var(--accent-text)">"prompt"</span>: <span style="color:var(--green)">"一只穿着宇航服的柴犬在月球上散步"</span>,
+  <span style="color:var(--accent-text)">"size"</span>: <span style="color:var(--green)">"16:9"</span>,
+  <span style="color:var(--accent-text)">"urls"</span>: [<span style="color:var(--green)">"https://example.com/ref.jpg"</span>]
+}</div>
+
+        <p style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px">返回示例</p>
+        <div class="code-block">
+{
+  <span style="color:var(--accent-text)">"code"</span>: <span style="color:#2563eb">200</span>,
+  <span style="color:var(--accent-text)">"msg"</span>: <span style="color:var(--green)">"成功"</span>,
+  <span style="color:var(--accent-text)">"data"</span>: {
+    <span style="color:var(--accent-text)">"id"</span>: <span style="color:var(--green)">"image_4d39239e-776a-4cbd-a8eb-e2d9b4816829"</span>,
+    <span style="color:var(--accent-text)">"count"</span>: <span style="color:#2563eb">10</span>
+  },
+  <span style="color:var(--accent-text)">"exec_time"</span>: <span style="color:#2563eb">0.29</span>,
+  <span style="color:var(--accent-text)">"ip"</span>: <span style="color:var(--green)">"119.6.176.239"</span>
+}</div>
+      </div>
+
+      <div class="doc-section">
+        <h3>查询任务状态</h3>
+        <div class="endpoint">
+          <span class="method-tag get">GET</span>
+          <span class="endpoint-url">https://api.wuyinkeji.com/api/async/detail?id=任务ID</span>
+        </div>
+
+        <p style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px">请求参数</p>
+        <table class="param-table">
+          <thead><tr><th>参数</th><th>必填</th><th>类型</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="pname">id</td>
+              <td><span class="prequired">必填</span></td>
+              <td>string</td>
+              <td>生成接口返回的任务 ID，如 <code>image_4d39239e-...</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px">返回参数</p>
+        <table class="param-table">
+          <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td class="pname">data.status</td><td>int</td><td>任务状态码（见下方）</td></tr>
+            <tr><td class="pname">data.message</td><td>string</td><td>错误信息（失败时返回）</td></tr>
+            <tr><td class="pname">data.result</td><td>object/array</td><td>生成结果，包含图片 URL</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <strong>状态码说明：</strong><br>
+          <div class="status-table" style="margin-top:8px">
+            <span class="status-item"><span class="status-dot s0"></span> 0 = 初始化</span>
+            <span class="status-item"><span class="status-dot s1"></span> 1 = 进行中</span>
+            <span class="status-item"><span class="status-dot s2"></span> 2 = 成功</span>
+            <span class="status-item"><span class="status-dot s3"></span> 3 = 失败</span>
+          </div>
+          任务为异步处理，提交后需轮询此接口直到 status 为 2 或 3。建议轮询间隔 3 秒。
+        </div>
+
+        <p style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px">返回示例（成功）</p>
+        <div class="code-block">
+{
+  <span style="color:var(--accent-text)">"code"</span>: <span style="color:#2563eb">200</span>,
+  <span style="color:var(--accent-text)">"msg"</span>: <span style="color:var(--green)">"成功"</span>,
+  <span style="color:var(--accent-text)">"data"</span>: {
+    <span style="color:var(--accent-text)">"status"</span>: <span style="color:#2563eb">2</span>,
+    <span style="color:var(--accent-text)">"result"</span>: <span style="color:var(--green)">"https://cdn.example.com/generated.jpg"</span>
+  },
+  <span style="color:var(--accent-text)">"exec_time"</span>: <span style="color:#2563eb">12.5</span>
+}</div>
+      </div>
+    </div>
+
+    <!-- 在此添加更多模型文档页面 -->
+
+  </main>
+</div>
+
+<script>
+// 侧边栏切换
+const sbLinks=document.querySelectorAll('.sb-link[data-model]');
+const pages=document.querySelectorAll('.doc-page');
+
+function switchModel(name){
+  sbLinks.forEach(l=>l.classList.toggle('active',l.dataset.model===name));
+  pages.forEach(p=>p.style.display=p.id==='page-'+name?'block':'none');
+  history.replaceState(null,'','#'+name);
+}
+
+sbLinks.forEach(link=>{
+  link.addEventListener('click',e=>{
+    e.preventDefault();
+    switchModel(link.dataset.model);
+  });
+});
+
+// URL hash 跳转
+const hash=location.hash.slice(1);
+if(hash&&document.getElementById('page-'+hash)){
+  switchModel(hash);
+}
+
+// 复制代码
+function copyCode(btn){
+  const block=btn.parentElement;
+  const text=block.textContent.replace('复制','').trim();
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='已复制';
+    setTimeout(()=>btn.textContent='复制',1500);
+  });
+}
+</script>
+</body>
+</html>
