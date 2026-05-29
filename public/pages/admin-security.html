@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>安全中心 - ModelHub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234F6EF7'/><text x='50' y='68' font-size='52' font-weight='bold' text-anchor='middle' fill='white'>M</text></svg>">
+<link rel="stylesheet" href="/css/common.css">
+<style>
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 84px 48px 80px;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+  animation: fadeUp .4s ease-out;
+}
+.page-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(231,76,60,.25);
+}
+.page-icon svg { width: 22px; height: 22px; color: #fff; }
+.page-title { font-size: 26px; font-weight: 800; margin-bottom: 2px; }
+.page-desc { font-size: 13px; color: var(--text-tertiary); }
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: 20px;
+  transition: var(--transition);
+}
+.back-btn:hover { color: var(--blue); }
+.back-btn svg { width: 16px; height: 16px; }
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  transition: var(--transition);
+  animation: fadeUp .4s ease-out both;
+}
+.stat-card:hover { border-color: var(--blue); box-shadow: var(--shadow); }
+.stat-card:nth-child(2) { animation-delay: .05s; }
+.stat-card:nth-child(3) { animation-delay: .1s; }
+.stat-card:nth-child(4) { animation-delay: .15s; }
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.stat-icon svg { width: 20px; height: 20px; }
+.stat-icon.blue { background: var(--blue-light); color: var(--blue); }
+.stat-icon.green { background: var(--green-light); color: var(--green); }
+.stat-icon.orange { background: var(--orange-light); color: var(--orange); }
+.stat-icon.red { background: var(--red-light); color: var(--red); }
+.stat-icon.purple { background: var(--purple-light); color: var(--purple); }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; }
+.stat-label { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+
+/* Section */
+.section {
+  margin-bottom: 32px;
+  animation: fadeUp .4s ease-out .2s both;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title svg { width: 20px; height: 20px; color: var(--text-tertiary); }
+
+/* Defense Overview */
+.defense-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.defense-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: var(--transition);
+}
+.defense-card:hover { border-color: var(--green); box-shadow: var(--shadow-sm); }
+.defense-status {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-top: 5px;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(0,180,42,.4);
+}
+.defense-info { flex: 1; }
+.defense-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.defense-desc { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; }
+
+/* Attack Logs Table */
+.table-wrap {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.table-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.filter-select {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  background: var(--bg-white);
+  color: var(--text-primary);
+  outline: none;
+}
+.filter-select:focus { border-color: var(--blue); }
+.btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-refresh:hover { border-color: var(--blue); color: var(--blue); }
+.btn-refresh svg { width: 14px; height: 14px; }
+.auto-refresh-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+.auto-refresh-toggle input { accent-color: var(--blue); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  background: var(--bg);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+tr:hover td { background: var(--bg); }
+.attack-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.attack-type.rate_limited { background: var(--orange-light); color: var(--orange); }
+.attack-type.suspicious { background: var(--red-light); color: var(--red); }
+.attack-type.login_failed { background: var(--purple-light); color: var(--purple); }
+.reason-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  margin: 1px 2px;
+  border: 1px solid var(--border);
+}
+
+/* Blocked IPs */
+.blocked-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.blocked-item {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: var(--transition);
+}
+.blocked-item:hover { border-color: var(--red); }
+.blocked-ip {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--red);
+}
+.blocked-meta {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.btn-unblock {
+  padding: 4px 12px;
+  border: 1px solid var(--green);
+  border-radius: var(--radius-sm);
+  background: var(--green-light);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-unblock:hover { background: var(--green); color: #fff; }
+
+/* Block IP Form */
+.block-form {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.block-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.block-form .form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.block-form input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+}
+.block-form input:focus { border-color: var(--blue); }
+.btn-block {
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--red);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-block:hover { opacity: .9; }
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 76px 16px 60px; }
+  .page-title { font-size: 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 16px; }
+  .stat-value { font-size: 22px; }
+  .defense-grid { grid-template-columns: 1fr; }
+  .table-wrap { overflow-x: auto; }
+  table { min-width: 600px; }
+  .block-form { flex-direction: column; align-items: stretch; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+  <a href="/pages/admin.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    返回管理后台
+  </a>
+
+  <div class="page-header">
+    <div class="page-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div>
+      <h1 class="page-title">安全中心</h1>
+      <p class="page-desc">实时监控攻击态势，管理IP封禁策略</p>
+    </div>
+  </div>
+
+  <!-- 实时统计 -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon red">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="stat-value" id="statAttacks">-</div>
+      <div class="stat-label">攻击记录</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+      <div class="stat-value" id="statBlocked">-</div>
+      <div class="stat-label">封禁IP</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="stat-value" id="statViolations">-</div>
+      <div class="stat-label">违规IP</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div class="stat-value" id="statConnections">-</div>
+      <div class="stat-label">活跃连接</div>
+    </div>
+  </div>
+
+  <!-- 防御体系 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        防御体系
+      </div>
+    </div>
+    <div class="defense-grid">
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">Helmet 安全头</div>
+          <div class="defense-desc">设置 X-Content-Type-Options、X-Frame-Options 等 HTTP 安全响应头，防止 XSS 和点击劫持</div>
+        </div>
+      </div>
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">请求体大小限制</div>
+          <div class="defense-desc">限制请求体最大 1MB，防止超大 Payload 耗尽服务器内存</div>
+        </div>
+      </div>
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">IP 封禁系统</div>
+          <div class="defense-desc">支持手动封禁和自动封禁（10分钟内违规10次自动拉黑30分钟），封禁列表持久化存储</div>
+        </div>
+      </div>
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">攻击模式检测</div>
+          <div class="defense-desc">自动识别 SQL 注入、XSS 攻击、路径遍历、命令注入，检测到严重攻击立即封禁 IP</div>
+        </div>
+      </div>
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">全局降速</div>
+          <div class="defense-desc">同一 IP 前 30 次/分钟正常响应，之后每次请求延迟递增 200ms，最大延迟 5 秒</div>
+        </div>
+      </div>
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">并发连接限制</div>
+          <div class="defense-desc">限制每个 IP 最多 10 个并发连接，超出直接返回 429，防止多线程并发攻击</div>
+        </div>
+      </div>
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">API 频率限制</div>
+          <div class="defense-desc">通用接口 60次/分钟，登录注册 10次/15分钟，管理后台 30次/分钟</div>
+        </div>
+      </div>
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">攻击日志记录</div>
+          <div class="defense-desc">所有可疑请求自动记录到日志文件，包括 IP、UA、攻击类型、请求详情</div>
+        </div>
+      </div>
+      <div class="defense-card">
+        <div class="defense-status"></div>
+        <div class="defense-info">
+          <div class="defense-name">扫描器检测</div>
+          <div class="defense-desc">识别 sqlmap、nikto、nmap 等常见攻击工具的 User-Agent，记录并累计违规</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 手动封禁 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        IP 封禁管理
+      </div>
+    </div>
+    <div class="block-form">
+      <div class="form-group">
+        <label>IP 地址</label>
+        <input type="text" id="blockIp" placeholder="例如: 192.168.1.100" style="width: 200px;">
+      </div>
+      <div class="form-group">
+        <label>封禁时长（分钟）</label>
+        <input type="number" id="blockDuration" placeholder="留空为永久" style="width: 140px;" min="1">
+      </div>
+      <div class="form-group">
+        <label>封禁原因</label>
+        <input type="text" id="blockReason" placeholder="可选" style="width: 180px;">
+      </div>
+      <button class="btn-block" onclick="blockIP()">封禁 IP</button>
+    </div>
+    <div id="blockedList" class="blocked-list">
+      <div class="empty-state">加载中...</div>
+    </div>
+  </div>
+
+  <!-- 攻击日志 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        攻击日志
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+          <select class="filter-select" id="logFilter" onchange="loadAttacks()">
+            <option value="all">全部类型</option>
+            <option value="rate_limited">频率限制</option>
+            <option value="suspicious">可疑请求</option>
+            <option value="login_failed">登录失败</option>
+          </select>
+          <button class="btn-refresh" onclick="loadAttacks()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            刷新
+          </button>
+        </div>
+        <label class="auto-refresh-toggle">
+          <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()"> 自动刷新 (10s)
+        </label>
+      </div>
+      <div id="attackLogs" style="overflow-x:auto;">
+        <div class="empty-state">加载中...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script>
+renderNavbar('admin');
+if (!checkAuth()) throw new Error('redirect');
+if (!getAuthState().isAdmin) { window.location.href = '/'; throw new Error('redirect'); }
+
+let autoRefreshTimer = null;
+
+// 加载所有数据
+async function loadAll() {
+  await Promise.all([loadStats(), loadAttacks(), loadBlockedIPs()]);
+}
+
+// 加载统计数据
+async function loadStats() {
+  try {
+    const [attacksRes, blockedRes, violationsRes, connRes] = await Promise.all([
+      api.get('/admin/attacks?limit=999'),
+      api.get('/admin/blocked-ips'),
+      api.get('/admin/violations'),
+      api.get('/admin/connections')
+    ]);
+
+    document.getElementById('statAttacks').textContent = (attacksRes.data || []).length;
+    document.getElementById('statBlocked').textContent = Object.keys(blockedRes.data || {}).length;
+    document.getElementById('statViolations').textContent = Object.keys(violationsRes.data || {}).length;
+    document.getElementById('statConnections').textContent = (connRes.data || {}).activeIPs || 0;
+  } catch (e) {
+    console.error('Stats load failed:', e);
+  }
+}
+
+// 加载攻击日志
+async function loadAttacks() {
+  try {
+    const res = await api.get('/admin/attacks?limit=200');
+    let logs = res.data || [];
+    const filter = document.getElementById('logFilter').value;
+    if (filter !== 'all') {
+      logs = logs.filter(l => l.type === filter);
+    }
+
+    const container = document.getElementById('attackLogs');
+    if (!logs.length) {
+      container.innerHTML = '<div class="empty-state">暂无攻击记录 - 一切安好</div>';
+      return;
+    }
+
+    container.innerHTML = `<table>
+      <thead><tr>
+        <th>时间</th><th>类型</th><th>IP</th><th>方法</th><th>路径</th><th>详情</th>
+      </tr></thead>
+      <tbody>${logs.slice(0, 100).map((log, i) => `<tr style="animation-delay:${i * .02}s">
+        <td style="white-space:nowrap;font-size:12px;">${escHtml(formatTime(log.time))}</td>
+        <td><span class="attack-type ${escHtml(log.type)}">${escHtml(typeLabel(log.type))}</span></td>
+        <td style="font-family:monospace;font-size:13px;">${escHtml(log.ip || '-')}</td>
+        <td>${escHtml(log.method || '-')}</td>
+        <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(log.path || '')}">${escHtml(log.path || '-')}</td>
+        <td style="max-width:200px;">${renderReasons(log.reasons)} ${log.email ? '<span class="reason-tag">' + escHtml(log.email) + '</span>' : ''}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch (e) {
+    document.getElementById('attackLogs').innerHTML = '<div class="empty-state">加载失败: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function typeLabel(type) {
+  const map = { rate_limited: '频率限制', suspicious: '可疑请求', login_failed: '登录失败' };
+  return map[type] || type;
+}
+
+function renderReasons(reasons) {
+  if (!reasons || !reasons.length) return '-';
+  const labelMap = {
+    rate_limit_exceeded: '超出频率限制',
+    attack_tool_ua: '攻击工具',
+    no_user_agent: '无UA',
+    path_traversal: '路径遍历',
+    sql_injection_attempt: 'SQL注入探测',
+    xss_attempt: 'XSS攻击',
+    sensitive_file_access: '敏感文件探测',
+    large_payload: '大Payload',
+    attack_tool_ua: '攻击工具UA',
+    scanner_detected: '扫描器',
+    sensitive_file_probe: '敏感文件探测',
+  };
+  return reasons.map(r => `<span class="reason-tag">${escHtml(labelMap[r] || r)}</span>`).join('');
+}
+
+// 加载封禁IP列表
+async function loadBlockedIPs() {
+  try {
+    const res = await api.get('/admin/blocked-ips');
+    const blocked = res.data || {};
+    const container = document.getElementById('blockedList');
+    const entries = Object.entries(blocked);
+
+    if (!entries.length) {
+      container.innerHTML = '<div class="empty-state">暂无封禁的 IP</div>';
+      return;
+    }
+
+    container.innerHTML = entries.map(([ip, info]) => `
+      <div class="blocked-item">
+        <div>
+          <div class="blocked-ip">${escHtml(ip)}</div>
+          <div class="blocked-meta">
+            原因: ${escHtml(info.reason || '-')} &nbsp;|&nbsp;
+            封禁时间: ${escHtml(formatTime(info.blockedAt))} &nbsp;|&nbsp;
+            ${info.expiresAtReadable === 'permanent' ? '永久封禁' : '到期: ' + escHtml(formatTime(info.expiresAtReadable))}
+          </div>
+        </div>
+        <button class="btn-unblock" onclick="unblockIP('${escHtml(ip)}')">解封</button>
+      </div>
+    `).join('');
+  } catch (e) {
+    document.getElementById('blockedList').innerHTML = '<div class="empty-state">加载失败: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+// 手动封禁IP
+async function blockIP() {
+  const ip = document.getElementById('blockIp').value.trim();
+  const duration = document.getElementById('blockDuration').value;
+  const reason = document.getElementById('blockReason').value.trim();
+
+  if (!ip) {
+    showToast('请输入 IP 地址', 'error');
+    return;
+  }
+
+  try {
+    await api.post('/admin/block-ip', {
+      ip,
+      durationMinutes: duration ? parseInt(duration) : null,
+      reason: reason || 'manual_admin'
+    });
+    showToast('已封禁 IP: ' + ip, 'success');
+    document.getElementById('blockIp').value = '';
+    document.getElementById('blockDuration').value = '';
+    document.getElementById('blockReason').value = '';
+    await loadBlockedIPs();
+    await loadStats();
+  } catch (e) {
+    showToast('封禁失败: ' + e.message, 'error');
+  }
+}
+
+// 解封IP
+async function unblockIP(ip) {
+  if (!confirm('确定要解封 ' + ip + ' 吗？')) return;
+  try {
+    await api.post('/admin/unblock-ip', { ip });
+    showToast('已解封 IP: ' + ip, 'success');
+    await loadBlockedIPs();
+    await loadStats();
+  } catch (e) {
+    showToast('解封失败: ' + e.message, 'error');
+  }
+}
+
+// 自动刷新
+function toggleAutoRefresh() {
+  const checked = document.getElementById('autoRefresh').checked;
+  if (checked) {
+    autoRefreshTimer = setInterval(loadAll, 10000);
+    showToast('已开启自动刷新 (10秒)', 'success');
+  } else {
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = null;
+    showToast('已关闭自动刷新', 'success');
+  }
+}
+
+// 格式化时间
+function formatTime(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}
+
+// HTML转义
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadAll();
+</script>
+</body>
+</html>

@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 const auth = require('../middleware/auth');
+const { logLoginFailed } = require('../middleware/attackLogger');
+const { recordViolation } = require('../middleware/ipBlocker');
 
 // POST /api/auth/register
 router.post('/register', async (req, res, next) => {
@@ -49,12 +51,16 @@ router.post('/login', async (req, res, next) => {
 
     const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (!rows.length) {
+      logLoginFailed(req, req.ip, email);
+      recordViolation(req.ip);
       return res.status(401).json({ code: 401, msg: '邮箱或密码错误' });
     }
 
     const user = rows[0];
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) {
+      logLoginFailed(req, req.ip, email);
+      recordViolation(req.ip);
       return res.status(401).json({ code: 401, msg: '邮箱或密码错误' });
     }
 
@@ -92,6 +98,8 @@ router.post('/admin-login', async (req, res, next) => {
 
     const adminKey = process.env.ADMIN_KEY;
     if (!adminKey || key !== adminKey) {
+      logLoginFailed(req, req.ip, 'admin-login');
+      recordViolation(req.ip);
       return res.status(401).json({ code: 401, msg: '管理员密钥错误' });
     }
 

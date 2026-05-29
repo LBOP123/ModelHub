@@ -68,7 +68,7 @@
 
 .nav-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
 .nav-card {
@@ -114,7 +114,7 @@
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .stat-card { padding: 16px; }
   .stat-value { font-size: 22px; }
-  .nav-cards { grid-template-columns: 1fr; gap: 12px; }
+  .nav-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .nav-card { padding: 20px; }
 }
 </style>
@@ -189,6 +189,14 @@
       <div class="nav-card-title">反馈管理</div>
       <div class="nav-card-desc">查看用户反馈意见，接受或拒绝建议，回复用户反馈</div>
       <span class="nav-card-count" id="navPending">-</span>
+    </a>
+    <a href="/pages/admin-security.html" class="nav-card">
+      <div class="nav-card-icon" style="background:var(--red-light);color:var(--red);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="nav-card-title">安全中心</div>
+      <div class="nav-card-desc">实时监控攻击态势，查看防御状态，管理 IP 封禁策略</div>
+      <span class="nav-card-count" id="navSecurity">防护中</span>
     </a>
   </div>
 </div>
